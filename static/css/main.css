@@ -1,0 +1,16 @@
+p{
+  font-family: 'Playfair Display', serif;
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+.inline-input {
+  display: inline-block;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  border-bottom: 1px solid black;
+  text-align: center;
+  font-size: 1rem;
+  font-family: 'Playball', cursive;
+}
