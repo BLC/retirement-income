@@ -80,10 +80,18 @@
   </div>
 
   <div class="ui container" style="margin-top:2rem">
-    <button class="ui primary button center align" id="submit">Submit</button>
+    <form class="ui form">
+      <h2 class="ui dividing header"><i class="credit card outline icon teal"></i>Account</h2>
+
+      <h2 class="ui dividing header"><i class="money bill alternate outline icon grey"></i>Guaranteed Income</h2>
+    </form>
   </div>
 
-  <div class="ui container" style="margin-top:2rem">
+  <div class="ui one column stackable center aligned page grid" style="margin-top:2rem">
+     <button class="ui primary button column four wide" id="submit">Submit</button>
+ </div>
+
+  <div class="ui one column stackable center aligned page grid" style="margin-top:2rem">
     <div class="ui card">
       <div class="image">
         <img src="{{ url_for('static', filename='img/male_mid.jpg') }}">
@@ -96,7 +104,6 @@
       </div>
     </div>
   </div>
-
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
