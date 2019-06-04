@@ -8,7 +8,7 @@ $(document).ready(function(){
         contribution: $('#contribution').val(),
         replacement_1: $('#replacement-ratio-1').val(),
         replacement_2: $('#replacement-ratio-2').val()
-,      },
+      },
       type: 'POST',
       url: '/target'
 

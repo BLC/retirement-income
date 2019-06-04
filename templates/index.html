@@ -67,8 +67,18 @@
             <i class="percent icon"></i><i class="fas fa-times"></i> <span class="take-home-income">0.00</span> <i class="fas fa-equals"></i>
             <span id="dis-spend">0.00</span>;
           </p>
-          <p></p>
-          <p></p>
+          <div class="ui clearing divider"></div>
+          <p class="questionnaire">
+            I expect my life expectancy to be at <input id="spend-down-confidence" type="number" class="inline-input" style="width:4rem" value="70">
+            <i class="percent icon"></i>
+          </p>
+          <p class="questionnaire">
+            My spend down age is calculated as
+            <button class="circular ui icon button positive" id="calc-spend-down-age">
+              <i class="icon sync alternate"></i>
+            </button>
+            <span id="spend-down-age">85</span>;
+          </p>
         </div>
       </div>
 
@@ -113,6 +123,7 @@
   </script>
 
   <script src="{{ url_for('static', filename='js/target.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/spend_down.js') }}"></script>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 
 </body>
