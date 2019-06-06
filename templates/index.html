@@ -23,29 +23,87 @@
       <div class="ui two column very relaxed grid">
 
         <div class="column wide">
+
+          <!-- Profile -->
           <h2 class="ui left floated header"><i class="user blue icon"></i>Tell us about you</h2>
           <div class="ui clearing divider"></div>
-          <p class="questionnaire">My name is <input id="name" type="text" class="inline-input">;
+          <p class="questionnaire">My name is <input id="name" type="text" class="inline-input" value="Bob">;
           </p>
           <p class="questionnaire"> Gender: <select id="gender" class="ui search dropdown inline-input" style="border: 0;">
             <option value="m" class="active">Male</option>
             <option value="f">Female</option>
           </select>
           </p>
-          <p class="questionnaire">I am <input id="age" type="text" class="inline-input">
+          <p class="questionnaire">I am <input id="age" type="text" class="inline-input" value="30">
               yrs old;
           </p>
           <p class="questionnaire">My annual salary is
             <i class="dollar sign icon"></i>
-            <input id="salary" type="number" class="inline-input">;
-          </p>
-          <p class="questionnaire">I want to contribute
-            <input id="contribution" type="number" class="inline-input">
-            <i class="percent icon"></i> of my salary;
+            <input id="salary" type="number" class="inline-input" value="100000">;
           </p>
           <p class="questionnaire">I want to retire at age
-            <input id="retirement-age" type="text" class="inline-input">.
+            <input id="retirement-age" type="text" class="inline-input" value="65">.
           </p>
+
+          <!-- Account -->
+          <!-- <h2 class="ui left floated header"><i class="credit card outline icon teal"></i>Account</h2> -->
+          <div class="ui clearing divider"></div>
+          <div class="ui styled fluid accordion">
+            <div class="active title">
+              <i class="dropdown icon"></i>
+              Manageable Account
+            </div>
+            <div class="active content">
+              <p class="questionnaire">Account Balance:
+                <i class="dollar sign icon"></i><input id="account-1-balance" type="number" class="inline-input" value="0">
+              </p>
+              <p class="questionnaire">Contribution Rate:
+                <input id="contribution" type="number" class="inline-input" value="0">
+                <i class="percent icon"></i>;
+              </p>
+              <p class="questionnaire">Sub-account Type:
+                <select id="account-1-tax" class="ui search dropdown" style="border: 0;display: inline-block;">
+                  <option value="pre-tax" class="active">Traditional</option>
+                  <option value="roth">Roth</option>
+                </select>
+              </p>
+            </div>
+            <div class="title">
+              <i class="dropdown icon"></i>
+              Manual Account
+            </div>
+          </div>
+
+          <!-- Guaranteed Income -->
+          <!-- <h2 class="ui left floated header"><i class="money bill alternate outline icon grey"></i>Guaranteed Income</h2> -->
+          <div class="ui clearing divider"></div>
+          <div class="ui styled fluid accordion">
+            <div class="active title">
+              <i class="dropdown icon"></i>
+              Social Security
+            </div>
+            <div class="active content">
+              <p class="questionnaire">I will claim my Social Security at age
+                <input id="ss-claim-age" type="number" class="inline-input">
+              </p>
+              <p class="questionnaire">My Social Security annual benefit is
+                <input id="ss-benefit" type="number" class="inline-input">
+              </p>
+            </div>
+            <div class="title">
+              <i class="dropdown icon"></i>
+              Annuity
+            </div>
+            <div class="content">
+              <p class="questionnaire">My annuity income will start at age
+                <input id="annuity-start-age" type="number" class="inline-input">
+              </p>
+              <p class="questionnaire">My annuity annual benefit will be
+                <input id="annuity-benefit" type="number" class="inline-input">
+              </p>
+            </div>
+          </div>
+
         </div>
 
         <div class="column wide">
@@ -89,17 +147,9 @@
     </div>
   </div>
 
-  <div class="ui container" style="margin-top:2rem">
-    <form class="ui form">
-      <h2 class="ui dividing header"><i class="credit card outline icon teal"></i>Account</h2>
-
-      <h2 class="ui dividing header"><i class="money bill alternate outline icon grey"></i>Guaranteed Income</h2>
-    </form>
-  </div>
-
   <div class="ui one column stackable center aligned page grid" style="margin-top:2rem">
      <button class="ui primary button column four wide" id="submit">Submit</button>
- </div>
+  </div>
 
   <div class="ui one column stackable center aligned page grid" style="margin-top:2rem">
     <div class="ui card">
@@ -120,6 +170,7 @@
 
   <script>
     $('#gender').dropdown();
+    $('.ui.accordion').accordion();
   </script>
 
   <script src="{{ url_for('static', filename='js/target.js') }}"></script>
