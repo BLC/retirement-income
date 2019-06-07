@@ -3,13 +3,15 @@ import pandas as pd
 import numpy as np
 from flask import Flask, jsonify, render_template, flash, request, redirect
 from python.calc_spend_down_age import calc_spend_down_age
+from python.calc_Social_Security import calc_social_security_benefit
 
 app = Flask(__name__)
 
 ################## Routes ######################
 @app.route('/')
 def index():
-    return render_template("index.html")
+    spend_down_age = calc_spend_down_age(30,'Male',0.7)
+    return render_template("index.html",spen_down_age = spend_down_age)
 
 @app.route('/process',methods=['POST'])
 def process():
@@ -38,10 +40,18 @@ def target():
 def spend_down():
     confidence_level = float(request.form['confidence_level'])/100
     gender = request.form['gender']
-    age = request.form['age']
+    age = int(request.form['age'])
 
     spend_down_age = calc_spend_down_age(age,gender,confidence_level)
     return jsonify({'spend_down_age':spend_down_age})
+
+@app.route('/social_security',methods=['POST'])
+def social_security():
+    salary = float(request.form['salary'])
+    claim_age = int(request.form['claim_age'])
+
+    social_security = calc_social_security_benefit(salary,claim_age)
+    return jsonify({'social_security_benefit':social_security})
 
 if __name__ == "__main__":
     app.run(debug=False)
