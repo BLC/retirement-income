@@ -84,10 +84,13 @@
             </div>
             <div class="active content">
               <p class="questionnaire">I will claim my Social Security at age
-                <input id="ss-claim-age" type="number" class="inline-input">
+                <input id="ss-claim-age" type="number" class="inline-input" value="65">
               </p>
               <p class="questionnaire">My Social Security annual benefit is
-                <input id="ss-benefit" type="number" class="inline-input">
+                <button class="circular ui icon button positive" id="calc-ss-benefit">
+                  <i class="icon sync alternate"></i>
+                </button>
+                <input id="ss-benefit" type="number" class="inline-input" value="{{ss_benefit}}">
               </p>
             </div>
             <div class="title">

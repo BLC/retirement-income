@@ -1,4 +1,4 @@
-$('#calc-Social-Security').on('click',function(event){
+$('#calc-ss-benefit').on('click',function(event){
 
   $.ajax({
     data: {
@@ -16,9 +16,9 @@ $('#calc-Social-Security').on('click',function(event){
     }
     else {
 
-      console.log(data.social_security_benefit)
+      // console.log(data.social_security_benefit);
 
-      $('#social-security-benefit').text(data.social_security_benefit);
+      $('#ss-benefit').attr('value', data.social_security_benefit);
     }
 
   });

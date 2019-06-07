@@ -11,7 +11,8 @@ app = Flask(__name__)
 @app.route('/')
 def index():
     spend_down_age = calc_spend_down_age(30,'Male',0.7)
-    return render_template("index.html",spen_down_age = spend_down_age)
+    ss_benefit = round(calc_social_security_benefit(100000,65))
+    return render_template("index.html",spen_down_age = spend_down_age,ss_benefit=ss_benefit)
 
 @app.route('/process',methods=['POST'])
 def process():
@@ -50,8 +51,8 @@ def social_security():
     salary = float(request.form['salary'])
     claim_age = int(request.form['claim_age'])
 
-    social_security = calc_social_security_benefit(salary,claim_age)
-    return jsonify({'social_security_benefit':social_security})
+    ss_benefit = round(calc_social_security_benefit(salary,claim_age))
+    return jsonify({'social_security_benefit':ss_benefit})
 
 if __name__ == "__main__":
     app.run(debug=False)
