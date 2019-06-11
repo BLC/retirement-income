@@ -4,6 +4,8 @@ import numpy as np
 from flask import Flask, jsonify, render_template, flash, request, redirect
 from python.calc_spend_down_age import calc_spend_down_age
 from python.calc_Social_Security import calc_social_security_benefit
+from python.get_forecast_projection import get_forecast_projection
+from python.get_advice_plan import get_advice_plan
 
 app = Flask(__name__)
 
@@ -20,10 +22,17 @@ def process():
     age = request.form['age']
     gender = request.form['gender']
 
-    if name and age:
-        return jsonify({'name':name,'age':age,'gender':gender})
+    profile = {}
+    goal = []
+    config = []
+    forecast = []
 
-    return jsonify({'error':'Missing data!'})
+    profile['age'] = float(age)
+    profile['name'] = name
+    profile['gender'] = gender
+
+    return jsonify(get_advice_plan(profile,goal,config,forecast))
+
 
 @app.route('/target',methods=['POST'])
 def target():

@@ -14,17 +14,9 @@ $(document).ready(function(){
     })
     .done(function(data) {
 
-      if (data.error) {
-
-        $('#output1').text(data.error);
-
-      }
-      else {
-
-        $('.name_output').text(data.name);
-        $('.age_output').text(data.age);
-        $('.gender_output').text(data.gender);
-      }
+        $('#advice-result-1').text(data.advice_1);
+        $('#advice-result-2').text(data.advice_2);
+        $('#advice-result-3').text(data.advice_3);
 
     });
   });

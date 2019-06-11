@@ -24,7 +24,7 @@
 
         <div class="column wide">
 
-          <!-- Profile -->
+          <!-- Profile ************************************************************* -->
           <h2 class="ui left floated header"><i class="user blue icon"></i>Tell us about you</h2>
           <div class="ui clearing divider"></div>
           <p class="questionnaire">My name is <input id="name" type="text" class="inline-input" value="Bob">;
@@ -45,8 +45,7 @@
             <input id="retirement-age" type="text" class="inline-input" value="65">.
           </p>
 
-          <!-- Account -->
-          <!-- <h2 class="ui left floated header"><i class="credit card outline icon teal"></i>Account</h2> -->
+          <!-- Account ************************************************************* -->
           <div class="ui clearing divider"></div>
           <div class="ui styled fluid accordion">
             <div class="active title">
@@ -74,8 +73,7 @@
             </div>
           </div>
 
-          <!-- Guaranteed Income -->
-          <!-- <h2 class="ui left floated header"><i class="money bill alternate outline icon grey"></i>Guaranteed Income</h2> -->
+          <!-- Guaranteed Income ******************************************************** -->
           <div class="ui clearing divider"></div>
           <div class="ui styled fluid accordion">
             <div class="active title">
@@ -106,9 +104,9 @@
               </p>
             </div>
           </div>
-
         </div>
 
+        <!-- Goal  ******************************************************** -->
         <div class="column wide">
           <h2 class="ui left floated header"><i class="dot circle outline red icon"></i>Tell us about your goal</h2>
           <div class="ui clearing divider"></div>
@@ -150,23 +148,65 @@
     </div>
   </div>
 
-  <div class="ui one column stackable center aligned page grid" style="margin-top:2rem">
-     <button class="ui primary button column four wide" id="submit">Submit</button>
+  <!-- Render The Plan ****************************************** -->
+  <div class="ui three column center aligned page very relaxed grid" style="margin-top:2rem">
+     <button class="circular ui icon button primary column one wide" id="submit"><i class="calculator icon"></i></button>
+     <div class="one wide column"></div>
+     <button class="circular ui icon button teal column one wide" id="flip"><i class="play icon"></i></button>
   </div>
 
   <div class="ui one column stackable center aligned page grid" style="margin-top:2rem">
-    <div class="ui card">
-      <div class="image">
-        <img src="{{ url_for('static', filename='img/male_mid.jpg') }}">
-      </div>
-      <div class="content">
-        <a class="Header">User Profile</a>
-        <div class="description">
-          <span class="name_output">Tristan</span> is <span class="gender_output">Male</span>, at <span class="age_output">24</span> years old.
+    <div class="ui shape">
+      <div class="sides">
+        <!-- Advice 1 -->
+        <div class="active side">
+          <div class="ui card">
+            <div class="image">
+              <img src="{{ url_for('static', filename='img/male_mid.jpg') }}">
+            </div>
+            <div class="content">
+              <a class="Header">User Profile</a>
+              <div class="description">
+                <span id="advice-result-1"></span>
+              </div>
+            </div>
+          </div>
         </div>
+        <!-- Advice 2 -->
+        <div class="side">
+          <div class="ui card">
+            <div class="image">
+              <img src="{{ url_for('static', filename='img/male_pre.jpg') }}">
+            </div>
+            <div class="content">
+              <a class="Header">User Profile</a>
+              <div class="description">
+                <span id="advice-result-2"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Advice 3 -->
+        <div class="side">
+          <div class="ui card">
+            <div class="image">
+              <img src="{{ url_for('static', filename='img/male_post.jpg') }}">
+            </div>
+            <div class="content">
+              <a class="Header">User Profile</a>
+              <div class="description">
+                <span id="advice-result-3"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
+
+
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
@@ -174,6 +214,9 @@
   <script>
     $('#gender').dropdown();
     $('.ui.accordion').accordion();
+    $('#flip').click(function(){
+            $('.ui.shape').shape('flip over');
+    });
   </script>
 
   <script src="{{ url_for('static', filename='js/target.js') }}"></script>
