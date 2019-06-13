@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 
 def calc_social_security_benefit(avg_salary, claim_age):
+    #dfSS = pd.read_csv('../data/SS.csv')
     dfSS = pd.read_csv('data/SS.csv')
     index_value = claim_age - 62
     avg_monthly_salary = avg_salary / 12
