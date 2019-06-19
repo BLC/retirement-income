@@ -17,8 +17,6 @@ $('#calc-spend-down-age').on('click',function(event){
     }
     else {
 
-      console.log(data.spend_down_age)
-
       $('#spend-down-age').text(data.spend_down_age);
     }
 
