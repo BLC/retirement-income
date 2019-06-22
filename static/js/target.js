@@ -5,7 +5,8 @@ $(document).ready(function(){
     $.ajax({
       data: {
         salary: $('#salary').val(),
-        contribution: $('#contribution').val(),
+        contribution: $('#account-1-contribution').val(),
+        tax: $('#account-1-tax option:selected').text(),
         replacement_1: $('#replacement-ratio-1').val(),
         replacement_2: $('#replacement-ratio-2').val()
       },
