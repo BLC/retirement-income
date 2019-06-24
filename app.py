@@ -22,7 +22,8 @@ income_tax_config = json.loads(open(income_tax_loc).read())
 def index():
     spend_down_age = calc_spend_down_age(30,'Male',0.7)
     ss_benefit = round(calc_social_security_benefit(100000,65))
-    return render_template("index.html",spen_down_age = spend_down_age,ss_benefit=ss_benefit)
+    default_take_home_income = round(calc_take_home_income(100000,0,0,income_tax_config,fica_config))
+    return render_template("index.html",spen_down_age = spend_down_age,ss_benefit=ss_benefit,take_home_income=default_take_home_income)
 
 @app.route('/process',methods=['POST'])
 def process():
@@ -72,7 +73,7 @@ def target():
     replacement_1 = float(request.form['replacement_1'])/100
     replacement_2 = float(request.form['replacement_2'])/100
 
-    take_home_income = calc_take_home_income(salary,pre_tax_contrib,post_tax_contrib,income_tax_config,fica_config)
+    take_home_income = round(calc_take_home_income(salary,pre_tax_contrib,post_tax_contrib,income_tax_config,fica_config))
     return jsonify({'target_0':take_home_income,'target_1':take_home_income * replacement_1,'target_2':take_home_income * replacement_2})
 
 @app.route('/spenddown',methods=['POST'])

@@ -86,7 +86,7 @@ function drawSpendingCurve (x_1,x_2) {
 
     slideInput.addEventListener('input',function(event) {
         var selectedValue = parseFloat(slideInput.value);
-        d3.select("#min-spending-ratio-output").text(selectedValue*100);
+        d3.select("#min-spending-ratio-output").text(Math.round(selectedValue*100));
         updateCurve(selectedValue);
     },false);
 }

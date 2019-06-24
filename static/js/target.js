@@ -32,10 +32,10 @@ $(document).ready(function(){
 
 function calc_target_1(ratio) {
   var target_income = $('#take-home-income').text();
-  $('#non-dis-spend').text(parseFloat(target_income) * parseFloat(ratio) / 100);
+  $('#non-dis-spend').text(Math.round(parseFloat(target_income) * parseFloat(ratio) / 100));
 };
 
 function calc_target_2(ratio) {
   var target_income = $('#take-home-income').text();
-  $('#dis-spend').text(parseFloat(target_income) * parseFloat(ratio) / 100);
+  $('#dis-spend').text(Math.round(parseFloat(target_income) * parseFloat(ratio) / 100));
 };
