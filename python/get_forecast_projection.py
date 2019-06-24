@@ -2,8 +2,23 @@ import os
 import pandas as pd
 import numpy as np
 from decimal import Decimal, ROUND_HALF_UP
+from calc_tax import calc_income_tax_liability, calc_fica_tax_liability, calc_take_home_income
+import json
+from scipy.optimize import minimize
 
-test = False
+test = True
+
+if test == True:
+
+    fica_loc = os.path.join('../data','fica_tax.json')
+    income_tax_loc = os.path.join('../data','income_tax.json')
+    fica_config = json.loads(open(fica_loc).read())
+    income_tax_config = json.loads(open(income_tax_loc).read())
+
+#Assumptions
+num_model_ports = 100
+num_sim_runs = 100
+num_sim_years = 100
 
 def load_glide_path():
     if test == True:
@@ -14,6 +29,16 @@ def load_glide_path():
     return dfGlidePath
 
 dfGlidePath = load_glide_path()
+
+def load_model_portfolios():
+    if test == True:
+        dfModelPorts = pd.read_csv('../data/modelPortfolio.csv', header = None)
+    else:
+        dfModelPorts = pd.read_csv('data/modelPortfolio.csv', header = None)
+    #print(dfModelPorts.iat[0,0])
+    return dfModelPorts
+
+dfModelPorts = load_model_portfolios()
 
 def determine_glide_path(spend_down_age, age):
     planning_horizon = spend_down_age - age
@@ -27,19 +52,8 @@ def lookup_closest_model_port(equity_allocation_over_time, projection_year):
     model_port = Decimal(temp).to_integral_value(rounding = ROUND_HALF_UP)
     return model_port
 
-def load_model_portfolios():
-    if test == True:
-        dfModelPorts = pd.read_csv('../data/modelPortfolio.csv', header = None)
-    else:
-        dfModelPorts = pd.read_csv('data/modelPortfolio.csv', header = None)
-    #print(dfModelPorts.iat[0,0])
-    return dfModelPorts
-
-dfModelPorts = load_model_portfolios()
-
 def load_sim_runs():
     #Create dictionary of data frames for each asset class simulation return file
-    #root = '../data/Simulation_Returns'
     if test == True:
         root = '../data/Simulation_Returns'
     else:
@@ -84,40 +98,246 @@ def calc_model_port_ret_across_sim_runs_at_projection_year(model_port, projectio
 
     return model_port_sim_run_output
 
-calc_model_port_ret_across_sim_runs_at_projection_year(0, 1, mp_asset_class_column_ordering, dfModelPorts, confidence_level = 0.7)
+def convert_contributions(raw_ctrbs, tax_types, salary):
+    ctrbs = np.zeros(len(tax_types))
+    for x in range(0, len(tax_types)):
+        if raw_ctrbs[x] < 1:
+            ctrbs[x] = raw_ctrbs[x] * salary
+        else:
+            ctrbs[x] = raw_ctrbs[x]
+    return ctrbs
 
-num_model_ports = 100
-num_sim_runs = 100
-num_sim_years = 100
+def accumulate(age, ret_age, ctrbs, starting_wealth, model_port, projection_year, tax_types, num_sim_runs):
+    ModelPortReturnsBySimAndYear = calc_model_port_ret_across_sim_runs_at_projection_year(model_port, projection_year,
+                                                                                        mp_asset_class_column_ordering, dfModelPorts, confidence_level = 0.3)
 
-def accumulate(age, ret_age, ctrbs, starting_wealth, sim_run, model_port, projection_year):
-    sim_run = i
-    model_port = m
-    projection_year = n
-    #decide to either calculate wealth across all sim runs at once for a given model port and projection year
-    ModelPortReturnsBySimAndYear = calc_model_port_ret_across_sim_runs_at_projection_year
-    MOY_wealth = starting_wealth * (1 + ModelPortReturnsBySimAndYear)
-    EOY_wealth = MOY_wealth + ctrbs
-    return ending_wealth
+    EOY_wealth = np.zeros((num_sim_runs,len(tax_types)))
 
-def forecast_accumulation_period(age, ret_age, equity_allocation_over_time, ctrbs, starting_wealths):
+    for i in range(num_sim_runs):
+        for x in range(len(tax_types)):
+            EOY_wealth[i][x] = starting_wealth[x] * (1 + ModelPortReturnsBySimAndYear[:,i]) + ctrbs
+
+    return EOY_wealth
+
+def initalize_arrays_that_vary_over_time(age, spend_down_age, tax_types, starting_wealth):
+
+    planning_horizon = spend_down_age - age
+
+    #Initalize glide path
+    equity_allocation_over_time = determine_glide_path(spend_down_age,age)
+
+    #define arrays of values that will vary over time
+    beg_wealth_over_time = np.zeros((planning_horizon, num_sim_runs, len(tax_types)))
+    end_wealth_over_time = np.zeros((planning_horizon,num_sim_runs, len(tax_types)))
+
+    #Set initial wealth at time 0
+    for i in range(100):
+        beg_wealth_over_time[0][i][:] = initial_wealth
+
+    return equity_allocation_over_time, beg_wealth_over_time, end_wealth_over_time
+
+#Objective Function and constraints
+def ObjectiveFunction(pre_tax_withdrawal):
+    return calc_take_home_income(gross_income = pre_tax_withdrawal,pre_tax_contrib = 0,post_tax_contrib = 0,income_tax_config = income_tax_config,fica_config = fica_config)
+#Constraint
+def const_function(pre_tax_withdrawal):
+    return (calc_take_home_income(gross_income = pre_tax_withdrawal,pre_tax_contrib = 0,post_tax_contrib = 0,
+            income_tax_config = income_tax_config,fica_config = fica_config) - post_tax_withdrawal)
+
+#const = {'type': 'ineq', 'fun':const_function}
+
+def decumulate(age, ret_age, post_tax_withdrawal, starting_wealth, model_port, projection_year, tax_types, num_sim_runs, after_tax_social_security):
+    ModelPortReturnsBySimAndYear = calc_model_port_ret_across_sim_runs_at_projection_year(model_port, projection_year,
+                                                                                        mp_asset_class_column_ordering, dfModelPorts, confidence_level = 0.3)
+    EOY_wealth = np.zeros((num_sim_runs,len(tax_types)))
+    withdrawal = np.zeros((num_sim_runs,len(tax_types)))
+    after_tax_retirement_income = np.zeros((num_sim_runs,len(tax_types)))
+
+    #minimize the pre tax withdrawal to satisfy the post tax withdrawal
+    solution = minimize(fun=ObjectiveFunction, x0 = post_tax_withdrawal/0.7, constraints = const)
+    optimized_pre_tax_withdrawal = solution.x
+
+    for i in range(num_sim_runs):
+        for x in range(len(tax_types)):
+            EOY_wealth[i][x] = max(starting_wealth[x] * (1 + ModelPortReturnsBySimAndYear[:,i]) - optimized_pre_tax_withdrawal, 0)
+            if starting_wealth[x] * (1 + ModelPortReturnsBySimAndYear[:,i]) - optimized_pre_tax_withdrawal >= 0: #withdrawal is fully funded
+                withdrawal[i][x] = optimized_pre_tax_withdrawal
+            else: #not fully funded
+                withdrawal[i][x] = max(0, starting_wealth[x] * (1 + ModelPortReturnsBySimAndYear[:,i]))
+
+            after_tax_retirement_income[i][x] = calculate_after_tax_retirement_income(after_tax_social_security, withdrawal[i][x])
+
+    return EOY_wealth, after_tax_retirement_income
+
+def ruin_probability(income_over_time, post_tax_withdrawal,target_income):
+    ruin_probability = sum (1 for income in income_over_time if income < target_income)
+    return ruin_probability
+
+def calc_after_tax_social_security_benefit(pre_tax_social_security_benefit):
+    after_tax_social_security = pre_tax_social_security_benefit  * 0.85
+    return after_tax_social_security
+
+def calculate_after_tax_retirement_income(after_tax_social_security, withdrawal):
+
+    after_tax_retirement_income = calc_take_home_income(gross_income = withdrawal, pre_tax_contrib = 0,post_tax_contrib = 0,
+                                                        income_tax_config = income_tax_config,fica_config = fica_config) + after_tax_social_security
+    return after_tax_retirement_income
+
+def determine_post_tax_withdrawal(social_security_ben, target_income, annuity_inc = 0):
+    after_tax_social_security = calc_after_tax_social_security_benefit(social_security_ben)
+    return  target_income - after_tax_social_security - annuity_inc #income need above guaranteed income
+
+def get_forecast_projection(age, spend_down_age, tax_types, initial_wealth, raw_ctrbs, salary, post_tax_withdrawal, config, after_tax_social_security, target_income):
+    #calculate intermediate outputs
+    equity_allocation_over_time, beg_wealth_over_time, end_wealth_over_time = initalize_arrays_that_vary_over_time(age = age,
+                                                                                                                    spend_down_age = spend_down_age,
+                                                                                                                    tax_types = tax_types, starting_wealth = initial_wealth)
+    planning_horizon = spend_down_age - age
+    ctrbs = convert_contributions(raw_ctrbs, tax_types, salary)
+    percentiles = config
+
+    #Set initial wealth at time 0
+    for i in range(100):
+        beg_wealth_over_time[0][i][:] = initial_wealth
+
+    #Define accumalation and decumalation period
     accum_period = max(ret_age - age, 0)
-    wealth_over_time = np.zeros((accum_period, num_sim_runs))
-    if accum_period == 0:
-        pass
-    else:
-        for n in range(accum_period):
-            calculated_age = age + n
-            m = lookup_closest_model_port(equity_allocation_over_time, n)
-            for i in range(num_sim_runs):
-                wealth_over_time[n][i] = accumulate(age = age, ret_age = ret_age, ctrbs = ctrbs, starting_wealth = starting_wealths,
-                                                    sim_run = i, model_port = m, projection_year = n)
+    decum_period = min(spend_down_age - age, spend_down_age - ret_age)
+
+    #initialize income over time array and objective function constraint
+    income_over_time = np.zeros((decum_period, num_sim_runs, len(tax_types)))
+    #Forecast Accumulation Period
+    for n in range(accum_period):
+        calculated_age = age + n
+        m = lookup_closest_model_port(equity_allocation_over_time, n)
+        #calculte
+        end_wealth_over_time[n][:][:] = accumulate(age = calculated_age, ret_age = ret_age,
+                                                        ctrbs = ctrbs, starting_wealth = beg_wealth_over_time[n][:][:],
+                                                        model_port = m, projection_year = n,
+                                                        tax_types = tax_types, num_sim_runs = num_sim_runs)
+
+        #Update beginning of year values for account balances
+        beg_wealth_over_time[n+1][:][:] = end_wealth_over_time[n][:][:]
+
+    #Forecast Decumulation Period
+    for n in range(decum_period):
+        calculated_age = age + n + accum_period
+        m = lookup_closest_model_port(equity_allocation_over_time, n + accum_period)
+        #post_tax_withdrawal = 30000 #can vary over time
+        end_wealth_over_time[n + accum_period][:][:], income_over_time[n][:][:] = decumulate(age = calculated_age, ret_age = ret_age,
+                                                                                post_tax_withdrawal = post_tax_withdrawal,
+                                                                                starting_wealth = beg_wealth_over_time[n + accum_period][:][:],
+                                                                                model_port = m, projection_year = n + accum_period,
+                                                                                tax_types = tax_types, num_sim_runs = num_sim_runs,after_tax_social_security = after_tax_social_security)
+
+        #Update beginning of year values for account balances
+        if n + 1 < decum_period:
+            beg_wealth_over_time[n + accum_period +1][:][:] = end_wealth_over_time[n + accum_period][:][:]
+
+    #calculate wealth at specified percentiles
+    percentiles = [30, 50]
+    wealth_over_time_at_specified_percentile = np.zeros((accum_period+decum_period, len(percentiles), len(tax_types)))
+    for n in range(accum_period + decum_period):
+        for p in range(0, len(percentiles)):
+            wealth_over_time_at_specified_percentile[n][p][:] = np.percentile(end_wealth_over_time[n][:][:], percentiles[p])
+        #print(wealth_over_time_at_specified_percentile[n][0][:])
+
+    #calculate income at specified percentiles
+    income_over_time_at_specified_percentile = np.zeros((decum_period, len(percentiles), len(tax_types)))
+    for n in range(decum_period):
+        for p in range(0, len(percentiles)):
+            income_over_time_at_specified_percentile[n][p][:] = np.percentile(income_over_time[n][:][:], percentiles[p])
+        #print(income_over_time_at_specified_percentile[n][0][:])
+
+    ruin_probability = 0.3
+
+    #Nested Dictionary
+    output_dictionary = {"Heuristics" : {"Ruin_Probability": ruin_probability},
+                        "Income": {"Percentile_1" : income_over_time_at_specified_percentile[:,0,:], "Percentile_2" : income_over_time_at_specified_percentile[:,1,:]},
+                        "Wealth": {"Percentile_1" : wealth_over_time_at_specified_percentile[:,0,:], "Percentile_2" : wealth_over_time_at_specified_percentile[:,1,:]}}
+
+
+    return output_dictionary  #dictionary of output including wealth over time at specified percentiles, income over time at specified percentiles, ruin probability
+
+if test == True:
+    spend_down_age = 80 #covered in app.py
+    age = 55 #covered in app.py
+    ret_age = 65 #covered in app.py
+    tax_types = ['Traditional'] #covered in app.py
+    planning_horizon = spend_down_age - age #can be covered in app.py
+    ctrbs = [5000] #covered in app.py
+    raw_ctrbs = [5000] #covered in app.py
+    initial_wealth = [50000] #covered in app.py
+    salary = 55000 #covered in app.py
+    config = [30, 50] #to be added in app.py
+    social_security_ben = 25000 #covered in app.py
+    target_income = 45000 #covered in app.py
+
+const = {'type': 'ineq', 'fun':const_function}
+after_tax_social_security = calc_after_tax_social_security_benefit(social_security_ben)
+post_tax_withdrawal = determine_post_tax_withdrawal(social_security_ben, target_income)
+output_dictionary = get_forecast_projection(age, spend_down_age, tax_types, initial_wealth, raw_ctrbs, salary, post_tax_withdrawal, config, after_tax_social_security, target_income)
+print(output_dictionary['Income']['Percentile_1'])
+
+#print(calc_take_home_income(gross_income = 27391.26322341, pre_tax_contrib = 0,post_tax_contrib = 0,
+#        income_tax_config = income_tax_config,fica_config = fica_config))
+
+def deprecated():
+
+
+    #This all works
+    equity_allocation_over_time = determine_glide_path(spend_down_age,age)
+
+    #define arrays of values that will vary over time
+    beg_wealth_over_time = np.zeros((planning_horizon, num_sim_runs, len(tax_types)))
+    end_wealth_over_time = np.zeros((planning_horizon,num_sim_runs, len(tax_types)))
+
+
+    #Set initial wealth at time 0
+    for i in range(100):
+        beg_wealth_over_time[0][i][:] = initial_wealth
+
+    #Accumulation Period Forecast
+    accum_period = max(ret_age - age, 0)
+    decum_period = min(spend_down_age - age, spend_down_age - ret_age)
+
+    #define income over time array
+    income_over_time = np.zeros((decum_period, num_sim_runs, len(tax_types)))
+
+    for n in range(accum_period):
+        calculated_age = age + n
+        m = lookup_closest_model_port(equity_allocation_over_time, n)
+        #calculte
+        end_wealth_over_time[n][:][:] = accumulate(age = calculated_age, ret_age = ret_age,
+                                                        ctrbs = ctrbs, starting_wealth = beg_wealth_over_time[n][:][:],
+                                                        model_port = m, projection_year = n,
+                                                        tax_types = tax_types, num_sim_runs = num_sim_runs)
+
+        #Update beginning of year values for account balances
+        beg_wealth_over_time[n+1][:][:] = end_wealth_over_time[n][:][:]
+        #print(end_wealth_over_time[n][1][0])
+    #print(end_wealth_over_time[9][9][0])
+    #print(beg_wealth_over_time[10][9][0])
+
+
+
+    #calculate wealth at specified percentiles
+    percentiles = [30, 50]
+    wealth_over_time_at_specified_percentile = np.zeros((accum_period+decum_period, len(percentiles), len(tax_types)))
+    for n in range(accum_period + decum_period):
+        for p in range(0, len(percentiles)):
+            wealth_over_time_at_specified_percentile[n][p][:] = np.percentile(end_wealth_over_time[n][:][:], percentiles[p])
+
+        #print(wealth_over_time_at_specified_percentile[n][0][:])
+
+    #calculate income at specified percentiles
+    income_over_time_at_specified_percentile = np.zeros((decum_period, len(percentiles), len(tax_types)))
+    for n in range(decum_period):
+        for p in range(0, len(percentiles)):
+            income_over_time_at_specified_percentile[n][p][:] = np.percentile(end_wealth_over_time[n][:][:], percentiles[p])
+
     return 10
 
-#get_tax_model()
-## FICA tax and income tax with Social Security Benefit
-
-#get the take home income
 
 def pre_tax_to_post_tax(pre_tax_inflows, post_tax_inflows, social_security_inc):
 
@@ -127,13 +347,11 @@ def optimize_withdrawal_ratio():
     #optimize the withdrawals from pre tax or post tax
     return 10
 
-def cal_after_tax_income():
-
-    return 10
 
 def get_forecast_projection(profile,goal,config,forecast):
 
     return 10
 
 def adaptive_spending():
+
     return 10
