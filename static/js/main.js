@@ -131,7 +131,13 @@ function income_plot(data,percentile) {
 
 $(document).ready(function(){
 
+  $('#plan-demo').hide();
+  $('#plan-loader').hide();
+
   $('#submit').on('click',function(event){
+
+    $('#plan-demo').hide();
+    $('#plan-loader').fadeIn();
 
     $.ajax({
       data: {
@@ -157,6 +163,9 @@ $(document).ready(function(){
 
     })
     .done(function(data) {
+
+      $('#plan-loader').fadeOut();
+      $('#plan-demo').fadeIn();
 
       wealth_plot(data,30);
       income_plot(data,30);

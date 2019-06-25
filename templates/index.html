@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css?family=Playball|Playfair+Display|Lora&display=swap" rel="stylesheet">
   <title>Retirement Income</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/loader.css') }}">
 </head>
 <body>
 
@@ -158,6 +159,7 @@
           <div class="ui clearing divider"></div>
           <h3>Calculate Retirement Plan</h3>
           <button class="circular ui icon button primary" id="submit"><i class="calculator icon"></i></button>
+          <div class="loader" id="plan-loader" style="padding-top:0;margin-top:0; margin-left:2rem">Loading...</div>
   
         </div>
         
@@ -171,7 +173,7 @@
   </div>
 
   <!-- Forecast ****************************************** -->
-  <div class="ui vertical stripe segment" style="margin-top:2rem">
+  <div class="ui vertical stripe segment" style="margin-top:2rem" id="plan-demo">
     <div class="ui internally celled grid">
       <div class="row">
         <div class="one wide column"></div>
@@ -212,7 +214,7 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
-  
+
   <script src="https://code.highcharts.com/highcharts.js"></script>
   <script src="https://code.highcharts.com/highcharts-more.js"></script>
   <script src="https://code.highcharts.com/modules/exporting.js"></script>
