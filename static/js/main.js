@@ -1,3 +1,60 @@
+function wealth_plot(data,percentile) {
+
+  Highcharts.chart('wealth-plot', {
+    chart: {
+      type: 'area'
+    },
+    title: {
+      text: 'Wealth Projection'
+    },
+    xAxis: {
+      title: {
+        text: 'Age'
+      },
+      allowDecimals: false,
+      labels: {
+        formatter: function () {
+          return this.value; 
+        }
+      }
+    },
+    yAxis: {
+      title: {
+        text: 'Wealth'
+      },
+      labels: {
+        formatter: function () {
+          return this.value / 1000 + 'k';
+        }
+      }
+    },
+    tooltip: {
+      pointFormat: 'Wealth-{series.name} at age <b>{point.x}</b><br/>is {point.y:,.0f}'
+    },
+    plotOptions: {
+      area: {
+        pointStart: data.Age[0],
+        marker: {
+          enabled: false,
+          symbol: 'circle',
+          radius: 2,
+          states: {
+            hover: {
+              enabled: true
+            }
+          }
+        }
+      }
+    },
+    series: [{
+      name: percentile.toString()+'%',
+      data: data.Wealth.filter(d => d.percentile === percentile).map(d => d.wealth)[0]
+    }]
+  });
+
+};
+
+
 $(document).ready(function(){
 
   $('#submit').on('click',function(event){
@@ -27,9 +84,13 @@ $(document).ready(function(){
     })
     .done(function(data) {
 
-        $('#advice-result-1').text(data.target.minimum_ratio);
-        $('#advice-result-2').text(data.spend_down_age);
-        $('#advice-result-3').text(data.social_security.claim_age);
+      console.log(data);
+
+      wealth_plot(data,30);
+
+      $('input:radio[name="wealth_plot"]').change(function() {
+        wealth_plot(data,parseFloat($(this).val()));
+      })
 
     });
   });

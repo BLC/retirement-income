@@ -5,33 +5,57 @@ import json
 from flask import Flask, jsonify, render_template, flash, request, redirect
 from python.calc_spend_down_age import calc_spend_down_age
 from python.calc_Social_Security import calc_social_security_benefit
-from python.get_forecast_projection import get_forecast_projection
-from python.get_advice_plan import get_advice_plan
 from python.calc_tax import calc_income_tax_liability, calc_fica_tax_liability, calc_take_home_income
+from python.load_data import load_glide_path, load_model_portfolios, load_sim_runs
+from python.get_forecast_projection_new import get_forecast_projection
 
 app = Flask(__name__)
 
-################## Tax Configs ######################
-fica_loc = os.path.join('data','fica_tax.json')
-income_tax_loc = os.path.join('data','income_tax.json')
+root_loc = 'data'
+#######################
+# Tax Input
+#######################
+fica_loc = os.path.join(root_loc,'fica_tax.json')
+income_tax_loc = os.path.join(root_loc,'income_tax.json')
 
-fica_config = json.loads(open(fica_loc).read())
-income_tax_config = json.loads(open(income_tax_loc).read())
+fica_dict = json.loads(open(fica_loc).read())
+income_tax_dict = json.loads(open(income_tax_loc).read())
+#######################
+# Other Configs
+#######################
+dfGlidePath = load_glide_path(root_loc)
+dfModelPorts = load_model_portfolios(root_loc)
+DFs_asset_class_sim_run, asset_class_sim_run_ordering = load_sim_runs(root_loc)
+
+mp_asset_class_column_ordering = ['Commodities','Global ex-US REIT','US REIT','Emerging Markets Equity','Developed Markets Large Cap',
+                              'US Small Cap Growth','US Small Cap Value','US Large Cap Growth','US Large Cap Value',
+                              'Global ex-US Small Cap','Emerging Markets Bond','Developed Markets Bond','US High Yield Bond',
+                              'US Treasury Bond - 5 Plus Years','US Treasury Bond - 1 to 5 Years','US Corporate Bond',
+                              'US Agency Bond','US Mortgage Backed Bond','US Municipal Bond','TIPS','Short-Term']
+config = {}
+config['glidepath'] = dfGlidePath
+config['modelportfolios'] = dfModelPorts
+config['simulation_returns'] = DFs_asset_class_sim_run
+config['asset_class_order'] = mp_asset_class_column_ordering
+config['income_tax'] = income_tax_dict
+config['fica_tax'] = fica_dict
+#######################
+# Forecast Config
+#######################
+forecast_config = {}
+forecast_config['percentiles'] = [30,50,70]
 ################## Routes ######################
 @app.route('/')
 def index():
     spend_down_age = calc_spend_down_age(30,'Male',0.7)
     ss_benefit = round(calc_social_security_benefit(100000,65))
-    default_take_home_income = round(calc_take_home_income(100000,0,0,income_tax_config,fica_config))
+    default_take_home_income = round(calc_take_home_income(100000,0,0,income_tax_dict,fica_dict))
     return render_template("index.html",spen_down_age = spend_down_age,ss_benefit=ss_benefit,take_home_income=default_take_home_income)
 
 @app.route('/process',methods=['POST'])
 def process():
     # Initialize the inputs
     profile = {}
-    goal = {}
-    config = []
-    forecast = []
     # Assign basic profile information
     profile['name'] = request.form['name']
     profile['gender'] = request.form['gender']
@@ -40,7 +64,7 @@ def process():
     profile['retirement_age'] = int(request.form['retirement_age'])
     profile['account'] = {}
     profile['account']['balance'] = float(request.form['manageable_balance'])
-    profile['account']['contribution'] = float(request.form['manageable_contrib'])
+    profile['account']['contribution'] = float(request.form['manageable_contrib'])/100
     profile['account']['type'] = request.form['manageable_tax']
     profile['social_security'] = {}
     profile['social_security']['claim_age'] = int(request.form['ss_claim_age'])
@@ -54,9 +78,11 @@ def process():
     profile['target'] = {}
     profile['target']['essential'] = float(request.form['non_dis_target'])
     profile['target']['discretional'] = float(request.form['dis_target'])
-    profile['target']['minimum_ratio'] = float(request.form['minimum_spending_ratio'])
-    advice_result = get_advice_plan(profile,goal,config,forecast)
-    return jsonify(profile)
+    profile['target']['minimum_ratio'] = float(request.form['minimum_spending_ratio'])/100
+    profile['target']['fixed'] = profile['target']['discretional']
+    forecast_output = get_forecast_projection(profile, config, forecast_config)
+
+    return jsonify(forecast_output)
 
 
 @app.route('/target',methods=['POST'])
@@ -73,7 +99,7 @@ def target():
     replacement_1 = float(request.form['replacement_1'])/100
     replacement_2 = float(request.form['replacement_2'])/100
 
-    take_home_income = round(calc_take_home_income(salary,pre_tax_contrib,post_tax_contrib,income_tax_config,fica_config))
+    take_home_income = round(calc_take_home_income(salary,pre_tax_contrib,post_tax_contrib,income_tax_dict,fica_dict))
     return jsonify({'target_0':take_home_income,'target_1':take_home_income * replacement_1,'target_2':take_home_income * replacement_2})
 
 @app.route('/spenddown',methods=['POST'])
