@@ -79,7 +79,7 @@ def process():
     profile['target']['essential'] = float(request.form['non_dis_target'])
     profile['target']['discretional'] = float(request.form['dis_target'])
     profile['target']['minimum_ratio'] = float(request.form['minimum_spending_ratio'])/100
-    profile['target']['fixed'] = profile['target']['discretional']
+    profile['target']['fixed'] = (profile['target']['discretional'] + profile['target']['essential']) / 2
     forecast_output = get_forecast_projection(profile, config, forecast_config)
 
     return jsonify(forecast_output)

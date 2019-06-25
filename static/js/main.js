@@ -54,6 +54,80 @@ function wealth_plot(data,percentile) {
 
 };
 
+function income_plot(data,percentile) {
+
+  income_start_index = data.profile.income_start_index;
+  income_vector = data.Income.filter(d => d.percentile === percentile).map(d => d.income)[0].slice(income_start_index);
+  age_vector = data.Age.slice(income_start_index);
+  target_upper = data.target_upperBound.slice(income_start_index);
+  target_lower = data.target_lowerBound.slice(income_start_index);
+
+  income_plot_series = _.zip(age_vector,income_vector);
+  boundary_plot_series = _.zip(age_vector,target_lower,target_upper);
+
+  console.log(income_plot_series);
+  console.log(boundary_plot_series);
+
+  Highcharts.chart('income-plot', {
+
+    title: {
+      text: 'Income Projection'
+    },
+  
+    xAxis: {
+      title: {
+        text: 'Age'
+      },
+      allowDecimals: false,
+      labels: {
+        formatter: function () {
+          return this.value; 
+        }
+      }
+    },
+  
+    yAxis: {
+      title: {
+        text: 'Wealth'
+      },
+      labels: {
+        formatter: function () {
+          return this.value / 1000 + 'k';
+        }
+      }
+    },
+  
+    tooltip: {
+      pointFormat: 'Income-{series.name} at age <b>{point.x}</b><br/>is {point.y:,.0f}'
+    },
+  
+    legend: {
+    },
+  
+    series: [{
+      name: percentile.toString()+'%',
+      data: income_plot_series,
+      zIndex: 1,
+      marker: {
+        fillColor: 'white',
+        lineWidth: 2,
+        lineColor: Highcharts.getOptions().colors[0]
+      }
+    }, {
+      name: 'Boundary',
+      data: boundary_plot_series,
+      type: 'arearange',
+      lineWidth: 0,
+      linkedTo: ':previous',
+      color: Highcharts.getOptions().colors[0],
+      fillOpacity: 0.3,
+      zIndex: 0,
+      marker: {
+        enabled: false
+      }
+    }]
+  });
+};
 
 $(document).ready(function(){
 
@@ -84,12 +158,12 @@ $(document).ready(function(){
     })
     .done(function(data) {
 
-      console.log(data);
-
       wealth_plot(data,30);
+      income_plot(data,30);
 
-      $('input:radio[name="wealth_plot"]').change(function() {
+      $('input:radio[name="percentile"]').change(function() {
         wealth_plot(data,parseFloat($(this).val()));
+        income_plot(data,parseFloat($(this).val()));
       })
 
     });

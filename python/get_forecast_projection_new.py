@@ -10,6 +10,7 @@ def initalize_arrays(profile, config,num_sim_runs = 100):
 
     initial_wealth = profile['account']['balance']
     age = profile['age']
+    retirement_age = profile['retirement_age']
     spend_down_age = profile['spend_down_age']
     planning_horizon = spend_down_age - age + 1
     annuity_start_age = profile['annuity']['start_age']
@@ -38,7 +39,16 @@ def initalize_arrays(profile, config,num_sim_runs = 100):
     ss_income[ss_start_age - age: ] = ss_benefit
     annuity_income[annuity_start_age - age:] = annuity_benefit
 
-    return equity_allocation_over_time, beg_wealth_over_time, end_wealth_over_time, ss_income, annuity_income
+    # Spending curve vector
+    spending_curve_vec = np.zeros(planning_horizon)
+    a_param = 1/pow((spend_down_age-retirement_age)/2,2)
+    a = (1 - profile['target']['minimum_ratio']) * a_param
+    b = profile['target']['minimum_ratio']
+    for i in range(len(spending_curve_vec)):
+        if i + age >= retirement_age:
+            spending_curve_vec[i] = a * pow((i + age - (spend_down_age+retirement_age)/2),2) + b
+
+    return equity_allocation_over_time, beg_wealth_over_time, end_wealth_over_time, ss_income, annuity_income, spending_curve_vec
 
 
 def calc_model_port_ret_across_sim_runs_at_projection_year(model_port_id,projection_year,config):
@@ -106,7 +116,7 @@ def lookup_closest_model_port(equity_allocation_over_time, projection_year):
 def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
     
     #calculate initial outputs
-    equity_allocation_over_time, beg_wealth_over_time, end_wealth_over_time, ss_income, annuity_income = initalize_arrays(profile, config, num_sim_runs)
+    equity_allocation_over_time, beg_wealth_over_time, end_wealth_over_time, ss_income, annuity_income, spending_curve_vec = initalize_arrays(profile, config, num_sim_runs)
 
     age = profile['age']
     spend_down_age = profile['spend_down_age']
@@ -116,6 +126,9 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
     ctrbs = profile['account']['contribution'] * profile['salary']
     percentiles = forecast_config['percentiles']
     target = profile['target']['fixed']
+
+    essential_target = profile['target']['essential']
+    discretional_target = profile['target']['discretional']
 
     age_vec = list(range(age,(spend_down_age+1)))
 
@@ -132,7 +145,8 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
                                                         model_port = model_port, projection_year = n,
                                                         config=config, num_sim_runs = num_sim_runs)
         else:
-            end_wealth_over_time[n][:],income_over_time[n][:] = decumulate_for_one_year(age = calculated_age, target = target, starting_wealth = beg_wealth_over_time[n][:],
+            variable_target = spending_curve_vec[n] * target
+            end_wealth_over_time[n][:],income_over_time[n][:] = decumulate_for_one_year(age = calculated_age, target = variable_target, starting_wealth = beg_wealth_over_time[n][:],
                                                          model_port = model_port, projection_year = n,
                                                          SS_Income = ss_income[n], annuity_Income = annuity_income[n], 
                                                          config=config, num_sim_runs = num_sim_runs)
@@ -156,6 +170,9 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
     output_dictionary = {"Heuristics" : {"Ruin_Probability": 0.3},
                         "Income": income_output_list,
                         "Wealth": wealth_output_list,
-                        "Age":age_vec}
+                        "Age":age_vec,
+                        "target_upperBound":list(discretional_target*spending_curve_vec),
+                        "target_lowerBound":list(essential_target*spending_curve_vec),
+                        "profile":{"income_start_index":max(retirement_age-age,0)}}
 
     return output_dictionary  

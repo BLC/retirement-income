@@ -174,35 +174,37 @@
   <div class="ui vertical stripe segment" style="margin-top:2rem">
     <div class="ui internally celled grid">
       <div class="row">
-        <div class="one wide column">
-          <form class="ui form" id="wealth-percentile">
+        <div class="one wide column"></div>
+        <div class="six wide column" id="wealth-plot" style="min-width: 310px; height: 400px; margin: 0 auto">
+        </div>
+        <div class="two wide column">
+          <form class="ui form center" id="percentile">
             <div class="grouped fields">
               <label>Percentile</label>
               <div class="field">
                 <div class="ui slider checkbox">
-                  <input type="radio" name="wealth_plot" checked="checked" value="30">
+                  <input type="radio" name="percentile" checked="checked" value="30">
                   <label>30%</label>
                 </div>
               </div>
               <div class="field">
                 <div class="ui slider checkbox">
-                  <input type="radio" name="wealth_plot" value="50">
+                  <input type="radio" name="percentile" value="50">
                   <label>50%</label>
                 </div>
               </div>
               <div class="field">
                 <div class="ui slider checkbox">
-                  <input type="radio" name="wealth_plot" value="70">
+                  <input type="radio" name="percentile" value="70">
                   <label>70%</label>
                 </div>
               </div>
             </div>
           </form>
         </div>
-        <div class="seven wide column" id="wealth-plot" style="min-width: 310px; height: 400px; margin: 0 auto">
+        <div class="six wide column" id="income-plot" style="min-width: 310px; height: 400px; margin: 0 auto">
         </div>
-        <div class="eight wide column">
-        </div>
+        <div class="one wide column"></div>
       </div>
     </div>
   </div>
@@ -210,9 +212,13 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.js"></script>
+  
   <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/highcharts-more.js"></script>
   <script src="https://code.highcharts.com/modules/exporting.js"></script>
   <script src="https://code.highcharts.com/modules/export-data.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/lodash/4.11.1/lodash.min.js"></script>
 
   <script>
     $('#gender').dropdown();
