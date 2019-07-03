@@ -4,7 +4,7 @@ import numpy as np
 
 def calc_spend_down_age(age, gender, confidence_level):
 
-    mortality_table = pd.read_csv('data/mortality.csv')
+    mortality_table = pd.read_csv('data/mortality.csv', header=0, sep=',', index_col=0)
 
     #Calculate Survival Probability
     SurvivalProbability = []
