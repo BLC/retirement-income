@@ -158,7 +158,19 @@
           <!-- Retirement Plan > -->
           <div class="ui clearing divider"></div>
           <h3>Calculate Retirement Plan</h3>
-          <button class="circular ui icon button primary" id="submit"><i class="calculator icon"></i></button>
+          <div>
+            <div class="ui selection dropdown" style="display:inline-block" id="spending-strategy">
+              <input type="hidden" name="Spending Strategy">
+              <div class="default text">Spending Strategy</div>
+              <i class="dropdown icon"></i>
+              <div class="menu">
+                <div class="item" data-value="0">1/T</div>
+                <div class="item" data-value="1">1/T*</div>
+                <div class="item" data-value="2">Liability Ratio</div>
+              </div>
+            </div>
+            <button class="circular ui icon button primary" id="submit" style="display:inline-block;margin-left:2rem"><i class="calculator icon"></i></button>
+          </div>
           <div class="loader" id="plan-loader" style="padding-top:0;margin-top:0; margin-left:2rem">Loading...</div>
   
         </div>
@@ -229,6 +241,7 @@
             $('.ui.shape').shape('flip over');
     });
     $('ui.slider.checkbox').checkbox();
+    $('.ui.dropdown').dropdown();
   </script>
 
   <script src="https://d3js.org/d3.v4.js"></script>

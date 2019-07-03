@@ -41,7 +41,7 @@ config['asset_class_order'] = mp_asset_class_column_ordering
 config['income_tax'] = income_tax_dict
 config['fica_tax'] = fica_dict
 config['mortality_table'] = dfMortTbl
-config['dynamic_spending_method'] = '1/T'
+# config['dynamic_spending_method'] = '1/T'
 
 #######################
 # Forecast Config
@@ -85,6 +85,14 @@ def process():
     profile['target']['minimum_ratio'] = float(request.form['minimum_spending_ratio'])/100
     profile['target']['maximum_ratio'] = 1.5 ##static for now
     profile['target']['fixed'] = (profile['target']['discretional'] + profile['target']['essential']) / 2
+
+    if request.form['spending_strategy'] == '1/T':
+        profile['spending_strategy'] = '1/T'
+    elif request.form['spending_strategy'] == '1/T*':
+        profile['spending_strategy'] = '1/T*'
+    else:
+        profile['spending_strategy'] = 'Liability_Ratio'
+
     forecast_output = get_forecast_projection(profile, config, forecast_config)
 
     return jsonify(forecast_output)

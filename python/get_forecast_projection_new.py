@@ -137,15 +137,23 @@ def decumulate_for_one_year(profile, starting_wealth, model_port, projection_yea
     def determine_target_spending_at_node(profile, config, spending_boundary_at_projection_year, 
                                         dynamic_spending_ratio_at_projection_year,starting_wealth_at_sim_run,
                                         annuity_Income, SS_Income):
-        target = profile['target']['fixed']
-        income_tax_assumption = 0.25 #used to determine the after tax dynamic spending target at each node
+        # target = profile['target']['fixed']
+        # income_tax_assumption = 0.25 #used to determine the after tax dynamic spending target at each node
         minimum_spending_boundary = profile['target']['essential']
         maximum_spending_boundary = profile['target']['discretional']
         minimum_boundary = minimum_spending_boundary * spending_boundary_at_projection_year #lower boundary
         maximum_boundary = maximum_spending_boundary * spending_boundary_at_projection_year #upper boundary
 
         ## Dynamic amount is the product of the starting account balance and the ratio following from the specified method
-        dynamic_amount = starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year * (1 - income_tax_assumption) + annuity_Income + SS_Income if starting_wealth_at_sim_run > 0 else 0
+        # dynamic_amount = starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year * (1 - income_tax_assumption) + annuity_Income + SS_Income if starting_wealth_at_sim_run > 0 else 0
+        '''
+        Apply tax model to accounts to calculate dynamical spending amount
+        '''
+        if profile['account']['type'] == 'Traditional': 
+            dynamic_amount_tax = calc_income_tax_liability(starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year, SS_Income, income_tax_config)
+        else:
+            dynamic_amount_tax = 0
+        dynamic_amount = starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year + annuity_Income + SS_Income - dynamic_amount_tax if starting_wealth_at_sim_run > 0 else 0
         
         ## Dynamic target is higher than lower boundary if enough account balance
         dynamic_target = max(minimum_boundary, min(maximum_boundary, dynamic_amount))
@@ -153,19 +161,27 @@ def decumulate_for_one_year(profile, starting_wealth, model_port, projection_yea
         return dynamic_target
 
     ## Define the optimization function 
-    def objectiveFunction(pre_tax_withdrawal):
-        income_tax_liability = calc_income_tax_liability(pre_tax_withdrawal, SS_Income, income_tax_config)
+    def objectiveFunction(pre_tax_withdrawal,target,accountType):
+        if accountType == 'Traditional':
+            income_tax_liability = calc_income_tax_liability(pre_tax_withdrawal, SS_Income, income_tax_config)
+        else:
+            income_tax_liability = 0
         return abs(pre_tax_withdrawal + SS_Income + annuity_Income - income_tax_liability - target)
 
     for i in range(num_sim_runs):
         target = determine_target_spending_at_node(profile, config, spending_boundary_at_projection_year, 
                                         dynamic_spending_ratio_at_projection_year, starting_wealth[i],
                                         annuity_Income, SS_Income)
+        
 
-        solution = minimize(fun=objectiveFunction, x0 = 0,method='SLSQP',bounds=[(0,starting_wealth[i])])
+        solution = minimize(fun=lambda x: objectiveFunction(x,target,profile['account']['type']), x0 = 0,method='SLSQP',bounds=[(0,starting_wealth[i])])
         optimized_pre_tax_withdrawal = solution.x
         EOY_wealth[i] = max(starting_wealth[i] - optimized_pre_tax_withdrawal,0) * (1 + ModelPortReturnsBySimAndYear[:,i])
-        income_tax_liability = calc_income_tax_liability(optimized_pre_tax_withdrawal, SS_Income, income_tax_config)
+        
+        if profile['account']['type'] == 'Traditional':
+            income_tax_liability = calc_income_tax_liability(optimized_pre_tax_withdrawal, SS_Income, income_tax_config)
+        else:
+            income_tax_liability = 0
         after_tax_retirement_income[i] = optimized_pre_tax_withdrawal + SS_Income + annuity_Income - income_tax_liability
 
     return EOY_wealth, after_tax_retirement_income
@@ -229,7 +245,8 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
     percentiles = forecast_config['percentiles']
     essential_target = profile['target']['essential']
     discretional_target = profile['target']['discretional']
-    dynamic_spending_method = str(config['dynamic_spending_method'])
+    dynamic_spending_method = str(profile['spending_strategy'])
+    # dynamic_spending_method = str(config['dynamic_spending_method'])
     spending_curve_vec = dynamic_spending_methods_dictionary[dynamic_spending_method]
 
     age_vec = list(range(age,(spend_down_age+1)))
@@ -277,6 +294,7 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
                         "Age":age_vec,
                         "target_upperBound":list(discretional_target*spending_boundary_curve_vec),
                         "target_lowerBound":list(essential_target*spending_boundary_curve_vec),
-                        "profile":{"income_start_index":max(retirement_age-age,0)}}
+                        "profile":{"income_start_index":max(retirement_age-age,0)},
+                        "spending_strategy":profile['spending_strategy']}
 
     return output_dictionary  

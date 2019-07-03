@@ -65,8 +65,8 @@ function income_plot(data,percentile) {
   income_plot_series = _.zip(age_vector,income_vector);
   boundary_plot_series = _.zip(age_vector,target_lower,target_upper);
 
-  console.log(income_plot_series);
-  console.log(boundary_plot_series);
+  // console.log(income_plot_series);
+  // console.log(boundary_plot_series);
 
   Highcharts.chart('income-plot', {
 
@@ -129,6 +129,7 @@ function income_plot(data,percentile) {
   });
 };
 
+
 $(document).ready(function(){
 
   $('#plan-demo').hide();
@@ -156,7 +157,9 @@ $(document).ready(function(){
         non_dis_target: parseFloat($('#non-dis-spend').text()),
         dis_target: parseFloat($('#dis-spend').text()),
         spend_down_age: parseInt($('#spend-down-age').text()),
-        minimum_spending_ratio: parseFloat($('#min-spending-ratio-output').text())
+        minimum_spending_ratio: parseFloat($('#min-spending-ratio-output').text()),
+        spending_strategy:$('#spending-strategy').dropdown('get text')
+        // spending_strategy: $('#spending-strategy').find(':selected').text()
       },
       type: 'POST',
       url: '/process'
