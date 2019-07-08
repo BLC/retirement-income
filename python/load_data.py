@@ -2,6 +2,11 @@ import os
 import pandas as pd
 import numpy as np
 
+def load_mort_tbl(root_loc):
+    file_loc = os.path.join(root_loc,'mortality.csv')
+    dfMortTbl = pd.read_csv(file_loc, header=0, sep=',', index_col=0)
+
+    return dfMortTbl
 
 def load_glide_path(root_loc):
     file_loc = os.path.join(root_loc,'Glidepath.csv')
