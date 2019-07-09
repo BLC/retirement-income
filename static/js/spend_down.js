@@ -1,4 +1,4 @@
-$('#calc-spend-down-age').on('click',function(event){
+$('#spend-down-confidence,#gender,#age').change(function(event){
 
   $.ajax({
     data: {

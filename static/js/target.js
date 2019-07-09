@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-  $('#calc-take-home-income').on('click',function(event){
+  $('#salary,#account-1-contribution,#account-1-tax').change(function(event){
 
     $.ajax({
       data: {

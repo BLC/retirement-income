@@ -1,4 +1,4 @@
-$('#calc-ss-benefit').on('click',function(event){
+$('#salary,#ss-claim-age').change(function(event){
 
   $.ajax({
     data: {
