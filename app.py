@@ -6,7 +6,7 @@ from flask import Flask, jsonify, render_template, flash, request, redirect
 from python.calc_spend_down_age import calc_spend_down_age
 from python.calc_Social_Security import calc_social_security_benefit
 from python.calc_tax import calc_income_tax_liability, calc_fica_tax_liability, calc_take_home_income
-from python.load_data import load_glide_path, load_model_portfolios, load_sim_runs, load_mort_tbl
+from python.load_data import load_glide_path, load_model_portfolios, load_sim_runs, load_mort_tbl, load_SPIA_rates
 from python.get_forecast_projection_new import get_forecast_projection
 
 app = Flask(__name__)
@@ -26,6 +26,7 @@ income_tax_dict = json.loads(open(income_tax_loc).read())
 dfGlidePath = load_glide_path(root_loc)
 dfModelPorts = load_model_portfolios(root_loc)
 dfMortTbl = load_mort_tbl(root_loc)
+dfSPIA_rates = load_   load_SPIA_rates(root_loc)
 DFs_asset_class_sim_run, asset_class_sim_run_ordering = load_sim_runs(root_loc)
 
 mp_asset_class_column_ordering = ['Commodities','Global ex-US REIT','US REIT','Emerging Markets Equity','Developed Markets Large Cap',
@@ -41,7 +42,7 @@ config['asset_class_order'] = mp_asset_class_column_ordering
 config['income_tax'] = income_tax_dict
 config['fica_tax'] = fica_dict
 config['mortality_table'] = dfMortTbl
-# config['dynamic_spending_method'] = '1/T'
+config['SPIA_rates'] = dfSPIA_rates
 
 #######################
 # Forecast Config

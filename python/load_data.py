@@ -8,6 +8,12 @@ def load_mort_tbl(root_loc):
 
     return dfMortTbl
 
+def load_SPIA_rates(root_loc):
+    file_loc = os.path.join(root_loc,'SPIA_rates.csv')
+    dfSPIA_Rates = pd.read_csv(file_loc, header=0, sep=',', index_col=0)
+
+    return dfSPIA_Rates
+
 def load_glide_path(root_loc):
     file_loc = os.path.join(root_loc,'Glidepath.csv')
     dfGlidePath = pd.read_csv(file_loc).set_index('Age')
