@@ -21,9 +21,9 @@ $(document).ready(function(){
       }
       else {
 
-        $('.take-home-income').text(data.target_0);
-        $('#non-dis-spend').text(data.target_1);
-        $('#dis-spend').text(data.target_2);
+        $('.take-home-income').text(Math.round(data.target_0));
+        $('#non-dis-spend').text(Math.round(data.target_1));
+        $('#dis-spend').text(Math.round(data.target_2));
       }
 
     });
