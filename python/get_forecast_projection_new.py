@@ -165,4 +165,4 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
                         "profile":{"income_start_index":max(retirement_age-age,0)},
                         "spending_strategy":profile['spending_strategy']}
 
-    return output_dictionary  
+    return output_dictionary

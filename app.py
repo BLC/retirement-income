@@ -8,6 +8,7 @@ from python.calc_Social_Security import calc_social_security_benefit
 from python.calc_tax import calc_income_tax_liability, calc_fica_tax_liability, calc_take_home_income
 from python.load_data import load_glide_path, load_model_portfolios, load_sim_runs, load_mort_tbl, load_SPIA_rates
 from python.get_forecast_projection_new import get_forecast_projection
+from python.model_port_helper import calc_granular_model_port_allocation
 
 app = Flask(__name__)
 
@@ -26,7 +27,7 @@ income_tax_dict = json.loads(open(income_tax_loc).read())
 dfGlidePath = load_glide_path(root_loc)
 dfModelPorts = load_model_portfolios(root_loc)
 dfMortTbl = load_mort_tbl(root_loc)
-dfSPIA_rates = load_   load_SPIA_rates(root_loc)
+dfSPIA_rates = load_SPIA_rates(root_loc)
 DFs_asset_class_sim_run, asset_class_sim_run_ordering = load_sim_runs(root_loc)
 
 mp_asset_class_column_ordering = ['Commodities','Global ex-US REIT','US REIT','Emerging Markets Equity','Developed Markets Large Cap',
@@ -95,8 +96,11 @@ def process():
         profile['spending_strategy'] = 'Liability_Ratio'
 
     forecast_output = get_forecast_projection(profile, config, forecast_config)
+    asset_allocation_tiers = calc_granular_model_port_allocation(profile, config)
 
-    return jsonify(forecast_output)
+    output = {**forecast_output,'portfolio':asset_allocation_tiers}
+
+    return jsonify(output)
 
 
 @app.route('/target',methods=['POST'])
