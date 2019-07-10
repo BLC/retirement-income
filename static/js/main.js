@@ -135,7 +135,25 @@ $(document).ready(function(){
   $('#plan-demo').hide();
   $('#plan-loader').hide();
 
+  var rangeSlider = document.getElementById('portfolio-advice-slider');
+  noUiSlider.create(rangeSlider, {
+      start: 30,
+      step: 1,
+      range: {
+          'min': 30,
+          'max': 91
+      }
+  });
+
   $('#submit').on('click',function(event){
+
+    rangeSlider.noUiSlider.updateOptions({
+      start: parseInt($('#age').val()),
+      range: {
+          'min': parseInt($('#age').val()),
+          'max': parseInt($('#spend-down-age').text())
+      }
+    });
 
     $('#plan-demo').hide();
     $('#plan-loader').fadeIn();
@@ -166,6 +184,11 @@ $(document).ready(function(){
 
     })
     .done(function(data) {
+
+      var rangeSliderValueElement = document.getElementById('portfolio-advice-age');
+      rangeSlider.noUiSlider.on('update', function (values, handle) {
+          rangeSliderValueElement.innerHTML = values[handle];
+      });
 
       $('#plan-loader').fadeOut();
       $('#plan-demo').fadeIn();
