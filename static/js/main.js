@@ -129,6 +129,68 @@ function income_plot(data,percentile) {
   });
 };
 
+function port_plot(data,age) {
+  // Splice in transparent for the center circle
+// Highcharts.getOptions().colors.splice(0, 0, 'transparent');
+
+
+Highcharts.chart('portfolio-advice-plot', {
+
+  chart: {
+    height: '100%'
+  },
+
+  title: {
+    text: 'Portfolio Allocation'
+  },
+ 
+  series: [{
+    type: "sunburst",
+    data: data[age],
+    allowDrillToNode: true,
+    cursor: 'pointer',
+    dataLabels: {
+      format: '{point.name}',
+      filter: {
+        property: 'innerArcLength',
+        operator: '>',
+        value: 16
+      }
+    },
+    levels: [{
+      level: 1,
+      levelIsConstant: false,
+      dataLabels: {
+        filter: {
+          property: 'outerArcLength',
+          operator: '>',
+          value: 64
+        }
+      }
+    }, 
+    {
+      level: 2,
+      colorVariation: {
+        key: 'brightness',
+        to: -1.5
+      }
+    }, {
+      level: 3,
+      colorVariation: {
+        key: 'brightness',
+        to: 0.5
+      }
+    }]
+
+  }],
+  tooltip: {
+    headerFormat: "",
+    pointFormat: 'The Allocation of <b>{point.name}</b> is <b>{point.value}</b>'
+  }
+});
+
+}
+
 
 $(document).ready(function(){
 
@@ -185,16 +247,18 @@ $(document).ready(function(){
     })
     .done(function(data) {
 
-      var rangeSliderValueElement = document.getElementById('portfolio-advice-age');
-      rangeSlider.noUiSlider.on('update', function (values, handle) {
-          rangeSliderValueElement.innerHTML = values[handle];
-      });
-
       $('#plan-loader').fadeOut();
       $('#plan-demo').fadeIn();
 
       wealth_plot(data,30);
       income_plot(data,30);
+      port_plot(data.portfolio,parseInt($('#age').val()));
+
+      var rangeSliderValueElement = document.getElementById('portfolio-advice-age');
+      rangeSlider.noUiSlider.on('update', function (values, handle) {
+          rangeSliderValueElement.innerHTML = values[handle];
+          port_plot(data.portfolio,String(parseFloat(values[handle]).toFixed(0)));
+      });
 
       $('input:radio[name="percentile"]').change(function() {
         wealth_plot(data,parseFloat($(this).val()));
