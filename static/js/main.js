@@ -256,8 +256,9 @@ $(document).ready(function(){
 
       var rangeSliderValueElement = document.getElementById('portfolio-advice-age');
       rangeSlider.noUiSlider.on('update', function (values, handle) {
-          rangeSliderValueElement.innerHTML = values[handle];
-          port_plot(data.portfolio,String(parseFloat(values[handle]).toFixed(0)));
+        var age_Output = parseFloat(values[handle]).toFixed(0)
+        rangeSliderValueElement.innerHTML = `<span><strong>Age</strong>: ${age_Output}</span>`;
+        port_plot(data.portfolio,String(age_Output));
       });
 
       $('input:radio[name="percentile"]').change(function() {

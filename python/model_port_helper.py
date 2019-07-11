@@ -56,16 +56,16 @@ def calc_granular_model_port_allocation(profile, config):
         bond_dictionary = dict(zip(bond_asset_class_order, bond_allocations))
         allocation_plot_list = []
         allocation_plot_list.append({"id": "0.0", "name": "Portfolio", "parent": ""})
-        allocation_plot_list.append({"id": "1.0", "name": "Equity", "parent": "0.0"})
-        allocation_plot_list.append({"id": "1.1", "name": "Bond", "parent": "0.0"})
+        allocation_plot_list.append({"id": "1.0", "name": "Bond", "parent": "0.0"})
+        allocation_plot_list.append({"id": "1.1", "name": "Equity", "parent": "0.0"})
         count = 0
 
-        for key in equity_dictionary:
-            allocation_plot_list.append({"id": f'2.{count}', "name": key, "parent": "1.0","value": equity_dictionary[key]})
-            count = count + 1
-            
         for key in bond_dictionary:
-            allocation_plot_list.append({"id": f'2.{count}', "name": key, "parent": "1.1","value": bond_dictionary[key]})
+            allocation_plot_list.append({"id": f'2.{count}', "name": key, "parent": "1.0","value": bond_dictionary[key]})
+            count = count + 1
+
+        for key in equity_dictionary:
+            allocation_plot_list.append({"id": f'2.{count}', "name": key, "parent": "1.1","value": equity_dictionary[key]})
             count = count + 1
 
         asset_allocation_dictionary.update({str(calculated_age): allocation_plot_list})
