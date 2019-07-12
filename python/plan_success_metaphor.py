@@ -1,3 +1,5 @@
+import numpy as np
+
 def calc_probability_of_ruin(profile, config, wealth_over_time, num_sim_runs=100):
     #mortality adjusted probability of ruin
     age = profile['age']
