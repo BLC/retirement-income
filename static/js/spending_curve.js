@@ -134,10 +134,13 @@ $('#salary,#account-1-contribution,#account-1-tax,#replacement-ratio-1,#replacem
           contribution: $('#account-1-contribution').val(),
           tax: $('#account-1-tax option:selected').text(),
           replacement_1: $('#replacement-ratio-1').val(),
-          replacement_2: $('#replacement-ratio-2').val()
+          replacement_2: $('#replacement-ratio-2').val(),
+          confidence_level:$('#spend-down-confidence').val(),
+          gender:$('#gender option:selected').text(),
+          age: $('#age').val()
         },
         type: 'POST',
-        url: '/target'
+        url: '/spendcurve'
   
       })
       .done(function(data) {
@@ -152,7 +155,7 @@ $('#salary,#account-1-contribution,#account-1-tax,#replacement-ratio-1,#replacem
             var target_update_2 = Math.round(data.target_2);
 
             var age_update_1 = parseInt($('#retirement-age').val());
-            var age_update_2 = parseInt($('#spend-down-age').text());
+            var age_update_2 = parseInt(data.spend_down_age);
             var alpha = parseFloat(slideInput.value);
 
             drawSpendingCurve (age_update_1,age_update_2,target_update_1,target_update_2,alpha);
