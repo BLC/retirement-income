@@ -56,15 +56,15 @@ profile['age'] = 50
 profile['salary'] = 100000
 profile['retirement_age'] = 65
 profile['account'] = {}
-profile['account']['balance'] = 50000
+profile['account']['balance'] = 500000
 profile['account']['contribution'] = 0.06
 profile['account']['type'] = 'Traditional'
 profile['social_security'] = {}
-profile['social_security']['claim_age'] = 67
-profile['social_security']['benefit'] = 32000
+profile['social_security']['claim_age'] = 65
+profile['social_security']['benefit'] = 0
 profile['annuity'] = {}
-profile['annuity']['start_age'] = 67
-profile['annuity']['benefit'] = 5000
+profile['annuity']['start_age'] = 65
+profile['annuity']['benefit'] = 0
 # Assign spend down age
 profile['spend_down_age'] = 92
 # Assign target information
@@ -75,9 +75,10 @@ profile['target']['discretional'] = 35000
 profile['target']['minimum_ratio'] = 0.6
 profile['target']['maximum_ratio'] = 1.5
 profile['spending_strategy'] = '1/T'
+profile['fixed_strategy'] = 'essentials'
 
-asset_allocation_tiers = calc_granular_model_port_allocation(profile, config)
-print(asset_allocation_tiers['92'])
+#asset_allocation_tiers = calc_granular_model_port_allocation(profile, config)
+#print(asset_allocation_tiers['92'])
 
 
 #print(calc_spend_down_age(profile['age'], profile['gender'], confidence_level = 0.7))

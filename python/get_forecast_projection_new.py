@@ -34,32 +34,35 @@ def decumulate_for_one_year(profile, starting_wealth, model_port, projection_yea
     after_tax_retirement_income = np.zeros(num_sim_runs)
     income_tax_config = config['income_tax']
 
-    ## Dynamic Spending function
+    ## Determine Spending (static or dynamic) function
     def determine_target_spending_at_node(profile, config, spending_boundary_at_projection_year, 
                                         dynamic_spending_ratio_at_projection_year,starting_wealth_at_sim_run,
                                         annuity_Income, SS_Income):
-        # target = profile['target']['fixed']
-        # income_tax_assumption = 0.25 #used to determine the after tax dynamic spending target at each node
-        minimum_spending_boundary = profile['target']['essential']
-        maximum_spending_boundary = profile['target']['discretional']
-        minimum_boundary = minimum_spending_boundary * spending_boundary_at_projection_year #lower boundary
-        maximum_boundary = maximum_spending_boundary * spending_boundary_at_projection_year #upper boundary
-
-        ## Dynamic amount is the product of the starting account balance and the ratio following from the specified method
-        # dynamic_amount = starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year * (1 - income_tax_assumption) + annuity_Income + SS_Income if starting_wealth_at_sim_run > 0 else 0
-        '''
-        Apply tax model to accounts to calculate dynamical spending amount
-        '''
-        if profile['account']['type'] == 'Traditional': 
-            dynamic_amount_tax = calc_income_tax_liability(starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year, SS_Income, income_tax_config)
-        else:
-            dynamic_amount_tax = 0
-        dynamic_amount = starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year + annuity_Income + SS_Income - dynamic_amount_tax if starting_wealth_at_sim_run > 0 else 0
+        spending_strategy = profile['spending_strategy']
         
-        ## Dynamic target is higher than lower boundary if enough account balance
-        dynamic_target = max(minimum_boundary, min(maximum_boundary, dynamic_amount))
+        if spending_strategy == 'fixed':
+            fixed_spending_strategy = profile['fixed_strategy']
+            target = profile['target']['essential'] if fixed_spending_strategy == 'essentials' else profile['target']['discretional']
+        else: ## dynamic 
+            minimum_spending_boundary = profile['target']['essential']
+            maximum_spending_boundary = profile['target']['discretional']
+            minimum_boundary = minimum_spending_boundary * spending_boundary_at_projection_year #lower boundary
+            maximum_boundary = maximum_spending_boundary * spending_boundary_at_projection_year #upper boundary
 
-        return dynamic_target
+            ## Dynamic amount is the product of the starting account balance and the ratio following from the specified method
+            '''
+            Apply tax model to accounts to calculate dynamical spending amount
+            '''
+            if profile['account']['type'] == 'Traditional': 
+                dynamic_amount_tax = calc_income_tax_liability(starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year, SS_Income, income_tax_config)
+            else:
+                dynamic_amount_tax = 0
+            dynamic_amount = starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year + annuity_Income + SS_Income - dynamic_amount_tax if starting_wealth_at_sim_run > 0 else 0
+            
+            ## Dynamic target is higher than lower boundary if enough account balance
+            target = max(minimum_boundary, min(maximum_boundary, dynamic_amount))
+            
+        return target
 
     ## Define the optimization function 
     def objectiveFunction(pre_tax_withdrawal,target,accountType):
@@ -115,8 +118,11 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
     percentiles = forecast_config['percentiles']
     essential_target = profile['target']['essential']
     discretional_target = profile['target']['discretional']
-    dynamic_spending_method = str(profile['spending_strategy'])
-    spending_curve_vec = dynamic_spending_methods_dictionary[dynamic_spending_method]
+    spending_method = str(profile['spending_strategy'])
+    if spending_method == 'fixed':
+        spending_curve_vec = dynamic_spending_methods_dictionary['1/T']
+    else: #dynamic
+        spending_curve_vec = dynamic_spending_methods_dictionary[spending_method]
 
     age_vec = list(range(age,(spend_down_age+1)))
 
