@@ -129,6 +129,29 @@ def spend_down():
     spend_down_age = calc_spend_down_age(age,gender,confidence_level)
     return jsonify({'spend_down_age':spend_down_age})
 
+@app.route('/spendcurve',methods=['POST'])
+def spend_curve():
+    confidence_level = float(request.form['confidence_level'])/100
+    gender = request.form['gender']
+    age = int(request.form['age'])
+    salary = float(request.form['salary'])
+    contribution = float(request.form['contribution'])/100
+    tax_type = request.form['tax']
+
+    if tax_type == 'Traditional':
+        pre_tax_contrib = contribution
+        post_tax_contrib = 0
+    else:
+        pre_tax_contrib = 0
+        post_tax_contrib = contribution
+    replacement_1 = float(request.form['replacement_1'])/100
+    replacement_2 = float(request.form['replacement_2'])/100
+
+    take_home_income = round(calc_take_home_income(salary,pre_tax_contrib,post_tax_contrib,income_tax_dict,fica_dict))
+    spend_down_age = calc_spend_down_age(age,gender,confidence_level)
+
+    return jsonify({'spend_down_age':spend_down_age,'target_0':take_home_income,'target_1':take_home_income * replacement_1,'target_2':take_home_income * replacement_2})
+
 @app.route('/social_security',methods=['POST'])
 def social_security():
     salary = float(request.form['salary'])

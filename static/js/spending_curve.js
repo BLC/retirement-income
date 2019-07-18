@@ -1,7 +1,7 @@
 var slideInput = document.querySelector("#spending-min-ratio");
 
 
-function drawSpendingCurve (x_1,x_2) {
+function drawSpendingCurve (x_1,x_2,t_1,t_2,alpha_) {
     // set the dimensions and margins of the graph
     var margin = {top: 10, right: 30, bottom: 20, left: 80},
     width = 580 - margin.left - margin.right,
@@ -33,35 +33,35 @@ function drawSpendingCurve (x_1,x_2) {
     // add the y Axis
     var y = d3.scaleLinear()
     .range([height, 0])
-    .domain([0, 1]);
+    .domain([0, t_2]);
 
     svg.append("g")
     .call(d3.axisLeft(y));
 
     // Calc Spending Curve Function and Update Curve 
-    function calcSpendingCurve(age,alpha) {
+    function calcSpendingCurve(age,alpha_) {
     
-        var a = (1-alpha) * a_param;
-        var b = alpha;
+        var a = (1-alpha_) * a_param;
+        var b = alpha_;
     
         return a * Math.pow((age-(x_1+x_2)/2),2) + b;
     }
 
     // Calculate the initial input values
     // d3.select("#spending-min-ratio").property("value", "1");
-    var alpha_init = 1;
-    d3.select("#min-spending-ratio-output").text(alpha_init*100);
-    var age_ratio_array_init = age_array.map(d => [d,calcSpendingCurve(d,alpha_init)]);
+    d3.select("#min-spending-ratio-output").text(alpha_*100);
+    var age_ratio_array_init_1 = age_array.map(d => [d,t_1 * calcSpendingCurve(d,alpha_)]);
+    var age_ratio_array_init_2 = age_array.map(d => [d,t_2 * calcSpendingCurve(d,alpha_)]);
 
-    var curve = svg
+    var curve_1 = svg
     .append('g')
     .append("path")
       .attr("class", "mypath")
-      .datum(age_ratio_array_init)
+      .datum(age_ratio_array_init_1)
       .attr("fill", "none")
       .attr("opacity", ".8")
-      .attr("stroke", "#69b3a2")
-      .attr("stroke-width", 2)
+      .attr("stroke", "#76787A")
+      .attr("stroke-width", 4)
       .attr("stroke-linejoin", "round")
       .attr("d",  d3.line()
         .curve(d3.curveBasis)
@@ -69,12 +69,39 @@ function drawSpendingCurve (x_1,x_2) {
           .y(function(d) { return y(d[1]); })
     );
 
-    function updateCurve(alpha) {
+    var curve_2 = svg
+    .append('g')
+    .append("path")
+      .attr("class", "mypath")
+      .datum(age_ratio_array_init_2)
+      .attr("fill", "none")
+      .attr("opacity", ".8")
+      .attr("stroke", "#2CABFF")
+      .attr("stroke-width", 4)
+      .attr("stroke-linejoin", "round")
+      .attr("d",  d3.line()
+        .curve(d3.curveBasis)
+          .x(function(d) { return x(d[0]); })
+          .y(function(d) { return y(d[1]); })
+    );
+
+    function updateCurve(alpha_) {
         // recompute density estimation
-        var age_ratio_array = age_array.map(d => [d,calcSpendingCurve(d,alpha)]);
+        var age_ratio_array_1 = age_array.map(d => [d,t_1 * calcSpendingCurve(d,alpha_)]);
+        var age_ratio_array_2 = age_array.map(d => [d,t_2 * calcSpendingCurve(d,alpha_)]);
         // update the chart
-        curve
-        .datum(age_ratio_array)
+        curve_1
+        .datum(age_ratio_array_1)
+        .transition()
+        .duration(1000)
+        .attr("d",  d3.line()
+            .curve(d3.curveBasis)
+            .x(function(d) { return x(d[0]); })
+            .y(function(d) { return y(d[1]); })
+        );
+
+        curve_2
+        .datum(age_ratio_array_2)
         .transition()
         .duration(1000)
         .attr("d",  d3.line()
@@ -94,16 +121,47 @@ function drawSpendingCurve (x_1,x_2) {
 var age_1 = parseInt($('#retirement-age').val());
 var age_2 = parseInt($('#spend-down-age').text());
 
-drawSpendingCurve (age_1,age_2);
+var target_1 = parseInt($('#non-dis-spend').text());
+var target_2 = parseInt($('#dis-spend').text());
 
-$('#calc-spending-curve').on('click',function(event){
+drawSpendingCurve (age_1,age_2,target_1,target_2,1);
 
-    // Re- render the chart
-    d3.select("#spending-curve").selectAll("svg").remove();
+$('#salary,#account-1-contribution,#account-1-tax,#replacement-ratio-1,#replacement-ratio-2,#spend-down-confidence,#gender,#age,#retirement-age').change(function(event){
 
-    age_1 = parseInt($('#retirement-age').val());
-    age_2 = parseInt($('#spend-down-age').text());
+    $.ajax({
+        data: {
+          salary: $('#salary').val(),
+          contribution: $('#account-1-contribution').val(),
+          tax: $('#account-1-tax option:selected').text(),
+          replacement_1: $('#replacement-ratio-1').val(),
+          replacement_2: $('#replacement-ratio-2').val(),
+          confidence_level:$('#spend-down-confidence').val(),
+          gender:$('#gender option:selected').text(),
+          age: $('#age').val()
+        },
+        type: 'POST',
+        url: '/spendcurve'
+  
+      })
+      .done(function(data) {
+  
+        if (data.error) {
+  
+        }
+        else {
+  
+            d3.select("#spending-curve").selectAll("svg").remove();
+            var target_update_1 = Math.round(data.target_1);
+            var target_update_2 = Math.round(data.target_2);
 
-    drawSpendingCurve (age_1,age_2);
+            var age_update_1 = parseInt($('#retirement-age').val());
+            var age_update_2 = parseInt(data.spend_down_age);
+            var alpha = parseFloat(slideInput.value);
+
+            drawSpendingCurve (age_update_1,age_update_2,target_update_1,target_update_2,alpha);
+        }
+  
+    });
+  
 });
 
