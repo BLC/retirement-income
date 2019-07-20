@@ -2,7 +2,7 @@ import numpy as np
 from python.model_port_helper import calc_model_port_ret_across_sim_runs_at_projection_year, lookup_closest_model_port
 from python.initialize import initalize_arrays
 
-def calc_Ret_PVs(profile, config, projection_year, model_port, income_over_time, wealth_over_time, target_lower_bound, num_sim_runs=100):
+def calc_RPVs(profile, config, projection_year, model_port, income_over_time, wealth_over_time, target_lower_bound, num_sim_runs=100):
     initial_vector = initalize_arrays(profile, config, num_sim_runs)
     equity_allocation_over_time = initial_vector['equity_allocation']
 
@@ -10,31 +10,41 @@ def calc_Ret_PVs(profile, config, projection_year, model_port, income_over_time,
     spend_down_age = profile['spend_down_age']
     retirement_age = profile['retirement_age']
     planning_horizon = spend_down_age - age + 1
-    ctrbs = profile['account']['contribution'] * profile['salary']
+    ## ctrbs = profile['account']['contribution'] * profile['salary']
 
     #Calculate discount factors
     def calc_disc_factors(config, planning_horizon, equity_allocation_over_time,num_sim_runs = 100):
-        disc_factors = np.zeros((num_sim_runs,planning_horizon))
+        disc_factors = np.zeros((planning_horizon, num_sim_runs))
         for n in range(planning_horizon):
             model_port = lookup_closest_model_port(equity_allocation_over_time, n)
             for i in range(num_sim_runs):
                 if n == 0:
-                    disc_factors[i][n] = 1 / 1 (1 + calc_model_port_ret_across_sim_runs_at_projection_year(model_port, n,config))
+                    disc_factors[n][i] = 1 / (1 + calc_model_port_ret_across_sim_runs_at_projection_year(model_port, n,config))
                 else:
-                    disc_factors[i][n] = (1/ (1 + calc_model_port_ret_across_sim_runs_at_projection_year(model_port, n,config)) * disc_factors[i][n-1] 
+                    disc_factors[n][i] = (1/ (1 + calc_model_port_ret_across_sim_runs_at_projection_year(model_port, n,config))) * disc_factors[n-1][i] 
         return disc_factors
     
     disc_factors = calc_disc_factors(config, planning_horizon, equity_allocation_over_time,num_sim_runs = 100)
 
-    RPVs_array = np.zeros((num_sim_runs,planning_horizon))
+    RPVs_array = np.zeros((planning_horizon, num_sim_runs))
     for n in range(planning_horizon):
         calculated_age = age + n
         if calculated_age < retirement_age:
-            RPVs_array[i][n] = ctrbs * DF
-        else:
+            RPVs_array[n][:] = 0
             
-    return 10
+        else:
+            for i in range(num_sim_runs):
+                RPVs_array[n][i] = (income_over_time[n][i] - target_lower_bound[n]) * disc_factors[n][i] ## shortfall
 
+    return RPVs_array
+
+def calc_Shortfall_metrics(RPVs_array, num_sim_runs=100):
+    #need to go across the standard deviation
+    for i in range(num_sim_runs):
+        temp = np.where(RPVs_array[:,i] < 0)
+    #semi deviation
+    #CTE
+    return 
 
 def calc_probability_of_ruin(profile, config, wealth_over_time, num_sim_runs=100):
     #mortality adjusted probability of ruin

@@ -160,12 +160,13 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
         income_output_list.append({'percentile':percentiles[p],'income':list(income_over_time_at_specified_percentile)})
         wealth_output_list.append({'percentile':percentiles[p],'wealth':list(wealth_over_time_at_specified_percentile)})
 
-
-    # RuinProbability = calc_probability_of_ruin(profile, config, end_wealth_over_time, num_sim_runs=100)
+    # Addition to the output dictionary if calculating RPV
     output_dictionary = {"Heuristics" : {"Ruin_Probability": 0},
                         "Income": income_output_list,
                         "Wealth": wealth_output_list,
                         "Age":age_vec,
+                        "Wealth_Over_All_Sims": end_wealth_over_time,
+                        "Income_Over_All_Sims": income_over_time,
                         "target_upperBound":list(discretional_target*spending_boundary_curve_vec),
                         "target_lowerBound":list(essential_target*spending_boundary_curve_vec),
                         "profile":{"income_start_index":max(retirement_age-age,0)},

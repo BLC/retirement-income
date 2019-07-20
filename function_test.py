@@ -83,6 +83,6 @@ profile['fixed_strategy'] = 'essentials'
 
 #print(calc_spend_down_age(profile['age'], profile['gender'], confidence_level = 0.7))
 
-get_forecast_projection(profile, config, forecast_config)
+test_output = get_forecast_projection(profile, config, forecast_config)
 #print(get_forecast_projection(profile, config, forecast_config))
 
