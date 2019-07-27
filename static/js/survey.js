@@ -134,7 +134,7 @@ var freedom_spending_list =
         ]
     },
     {
-        "name": "Shopping",
+        "name": "shopping",
         "title": "Shopping",
         "bucket_list": [
             {
@@ -150,7 +150,7 @@ var freedom_spending_list =
         ]
     },
     {
-        "name": "Vacation",
+        "name": "vacation",
         "title": "Vacation and non-standard Travel",
         "bucket_list": [
             {
@@ -166,6 +166,9 @@ var freedom_spending_list =
         ]
     }
 ];
+
+var essential_group_list = essential_spending_list.map(d => d.name);
+var freedom_group_list = freedom_spending_list.map(d => d.name);
 
 const mapToElementLower = function(bucket) {
 
@@ -238,6 +241,55 @@ var pages = [page0,page1,page2];
 
 json["pages"] = pages;
 
+// Add the function to extract result data
+const calcTotalSpend = function(data) {
+
+    var essential_cost = 0;
+    var freedom_cost = 0;
+
+    for (var key1 in data) {
+        if (data.hasOwnProperty(key1)) {
+            var group_budget = data[key1][0];
+            for (var key2 in group_budget) {
+                if (key2.split('_')[0] === 'amount') {
+                    var freq_key = 'frequency_'+key2.split('_')[1];
+                    var freq_value = group_budget[freq_key];
+                    var num_period;
+                    ["Daily","Weekly","Monthly", "Annually"]
+                    switch (freq_value) {
+                        case 'Daily':
+                            num_period = 365;
+                            break;
+                        case 'Weekly':
+                            num_period = 52;
+                            break;
+                        case 'Monthly':
+                            num_period = 12;
+                            break;
+                        case 'Annually':
+                            num_period = 1;
+                    };
+                    if (essential_group_list.includes(key1)) {
+                        essential_cost = essential_cost + num_period * group_budget[key2];
+                    }
+                    else {
+                        freedom_cost = freedom_cost + num_period * group_budget[key2];
+                    };
+                }
+            }
+        }
+    }
+
+    var cost = {};
+    cost['freedom'] = freedom_cost;
+    cost['essential'] = essential_cost;
+    cost['total'] = freedom_cost + essential_cost;
+
+    return cost
+
+};
+
+// Add the survey
 var modal = document.getElementById("survey");
 
 $("#open-survey").on('click',function(event){
@@ -249,10 +301,21 @@ $("#open-survey").on('click',function(event){
     survey
         .onComplete
         .add(function (result) {
-            // document
-            //     .querySelector('#surveyResult')
-            //     .textContent = "Result JSON:\n" + JSON.stringify(result.data, null, 3);
-            console.log(result.data);
+            
+            var cost = calcTotalSpend(result.data);
+            var target = parseFloat($('.take-home-income').first().text());
+
+            var ratio_1 = Math.round(cost.essential/target * 100);
+            var ratio_2 = Math.round(cost.total/target * 100);
+
+            $('#replacement-ratio-1').attr('value',ratio_1);
+            $('#replacement-ratio-2').attr('value', ratio_2);
+
+            $('#non-dis-spend').text(Math.round(parseFloat(target) * ratio_1 / 100));
+            $('#dis-spend').text(Math.round(parseFloat(target) * ratio_2 / 100));
+
+            $('#replacement-ratio-1').trigger('change');
+            $('#replacement-ratio-2').trigger('change');
 
         });
 
