@@ -255,7 +255,6 @@ const calcTotalSpend = function(data) {
                     var freq_key = 'frequency_'+key2.split('_')[1];
                     var freq_value = group_budget[freq_key];
                     var num_period;
-                    ["Daily","Weekly","Monthly", "Annually"]
                     switch (freq_value) {
                         case 'Daily':
                             num_period = 365;
@@ -311,8 +310,8 @@ $("#open-survey").on('click',function(event){
             $('#replacement-ratio-1').attr('value',ratio_1);
             $('#replacement-ratio-2').attr('value', ratio_2);
 
-            $('#non-dis-spend').text(Math.round(parseFloat(target) * ratio_1 / 100));
-            $('#dis-spend').text(Math.round(parseFloat(target) * ratio_2 / 100));
+            $('#non-dis-spend').text(Math.round(cost.essential));
+            $('#dis-spend').text(Math.round(cost.total));
 
             $('#replacement-ratio-1').trigger('change');
             $('#replacement-ratio-2').trigger('change');
