@@ -164,6 +164,22 @@ var freedom_spending_list =
                 "default_fre": "Monthly"
             }
         ]
+    },
+    {
+        "name": "relax",
+        "title": "Recharge and Relaxation",
+        "bucket_list": [
+            {
+                "name": "spa",
+                "title": "Spa / Massage",
+                "default_fre": "Annually"
+            },
+            {
+                "name": "gym",
+                "title": "Gym membership",
+                "default_fre": "Monthly"
+            }
+        ]
     }
 ];
 
