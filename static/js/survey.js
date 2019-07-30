@@ -35,12 +35,20 @@ var essential_spending_list =
             {
                 "name": "rent",
                 "title": "Rent and/or mortage with property taxes",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 1000
             },
             {
                 "name": "utility",
                 "title": "Utilities (water, gas, electricity, etc.)",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 200
+            },
+            {
+                "name": "house_insurance",
+                "title": "Insurance and Maintenance",
+                "default_fre": "Monthly",
+                "default_val": 300
             }
         ]
     },
@@ -51,12 +59,14 @@ var essential_spending_list =
             {
                 "name": "public",
                 "title": "Public Transportion - Train, Bus, Taxi, Other",
-                "default_fre": "Daily"
+                "default_fre": "Daily",
+                "default_val": 5
             },
             {
                 "name": "private",
                 "title": "Private Vehicles - Depreciation/Lease and Services & Repairs",
-                "default_fre": "Annually"
+                "default_fre": "Annually",
+                "default_val": 7000
             }
         ]
     },
@@ -67,12 +77,14 @@ var essential_spending_list =
             {
                 "name": "basic",
                 "title": "Internet, Phone, TV",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 200
             },
             {
                 "name": "other",
                 "title": "Other Subscriptions",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 100
             }
         ]
     },
@@ -83,17 +95,20 @@ var essential_spending_list =
             {
                 "name": "grocery",
                 "title": "Groceries and Household supplies",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 250
             },
             {
                 "name": "clothing",
                 "title": "Clothing",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 200
             },
             {
                 "name": "other",
                 "title": "Other",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 200
             }
         ]
     },
@@ -104,12 +119,14 @@ var essential_spending_list =
             {
                 "name": "standard",
                 "title": "Out-of-pocket standard healthcare costs (insurance, medications, etc.)",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 700
             },
             {
                 "name": "additional",
                 "title": "Additional out-of-pocket non-standard costs (e.g., long-term care, surgery)",
-                "default_fre": "Monthly"
+                "default_fre": "Annually",
+                "default_val": 4000
             }
         ]
     }
@@ -124,12 +141,14 @@ var freedom_spending_list =
             {
                 "name": "restaurant",
                 "title": "Restaurants & Drinks",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 1000
             },
             {
                 "name": "event",
                 "title": "Events (sports, music, theather etc.)",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 300
             }
         ]
     },
@@ -140,12 +159,14 @@ var freedom_spending_list =
             {
                 "name": "electronics",
                 "title": "Electronics and home goods (computer, phone, appliances)",
-                "default_fre": "Annually"
+                "default_fre": "Annually",
+                "default_val": 1500
             },
             {
                 "name": "luxury",
                 "title": "Luxury Items (clothes, jewellery)",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 2000
             }
         ]
     },
@@ -156,12 +177,14 @@ var freedom_spending_list =
             {
                 "name": "Flights",
                 "title": "Flights",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 350
             },
             {
                 "name": "Lodge",
                 "title": "Lodging: hotels, airbnb, etc",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 300
             }
         ]
     },
@@ -172,12 +195,14 @@ var freedom_spending_list =
             {
                 "name": "spa",
                 "title": "Spa / Massage",
-                "default_fre": "Annually"
+                "default_fre": "Annually",
+                "default_val": 200
             },
             {
                 "name": "gym",
                 "title": "Gym membership",
-                "default_fre": "Monthly"
+                "default_fre": "Monthly",
+                "default_val": 60
             }
         ]
     }
@@ -198,7 +223,7 @@ const mapToElementLower = function(bucket) {
                 "inputType": "number",
                 "name": "amount_"+bucket["name"],
                 "title": "Spending Amount",
-                "defaultValue":0
+                "defaultValue":bucket["default_val"]
             }, {
                 "type": "dropdown",
                 "name": "frequency_"+bucket["name"],
