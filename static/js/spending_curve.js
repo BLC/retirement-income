@@ -1,6 +1,5 @@
 var slideInput = document.querySelector("#spending-min-ratio");
 
-
 function drawSpendingCurve (x_1,x_2,t_1,t_2,alpha_) {
     // set the dimensions and margins of the graph
     var margin = {top: 10, right: 30, bottom: 20, left: 80},
@@ -58,32 +57,45 @@ function drawSpendingCurve (x_1,x_2,t_1,t_2,alpha_) {
     .append("path")
       .attr("class", "mypath")
       .datum(age_ratio_array_init_1)
-      .attr("fill", "none")
-      .attr("opacity", ".8")
-      .attr("stroke", "#76787A")
+      .attr("fill", "#000000")
+      .attr("opacity", "1")
+      .attr("stroke", "#000000")
       .attr("stroke-width", 4)
       .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(d[0]); })
-          .y(function(d) { return y(d[1]); })
-    );
+      .attr("d",d3.area()
+        .x(function(d) { return x(d[0]); })
+        .y0(height)
+        .y1(function(d) { return y(d[1]); })
+      );
+
+      // .attr("d",  d3.line()
+      //   .curve(d3.curveBasis)
+      //     .x(function(d) { return x(d[0]); })
+      //     .y(function(d) { return y(d[1]); })
+      // );
+
 
     var curve_2 = svg
     .append('g')
     .append("path")
       .attr("class", "mypath")
       .datum(age_ratio_array_init_2)
-      .attr("fill", "none")
-      .attr("opacity", ".8")
+      .attr("fill", "#2CABFF")
+      .attr("opacity", ".6")
       .attr("stroke", "#2CABFF")
       .attr("stroke-width", 4)
       .attr("stroke-linejoin", "round")
-      .attr("d",  d3.line()
-        .curve(d3.curveBasis)
-          .x(function(d) { return x(d[0]); })
-          .y(function(d) { return y(d[1]); })
-    );
+      .attr("d",d3.area()
+        .x(function(d) { return x(d[0]); })
+        .y0(height)
+        .y1(function(d) { return y(d[1]); })
+      );
+      // .attr("d",  d3.line()
+      //   .curve(d3.curveBasis)
+      //     .x(function(d) { return x(d[0]); })
+      //     .y(function(d) { return y(d[1]); })
+      // )
+  
 
     function updateCurve(alpha_) {
         // recompute density estimation
@@ -94,21 +106,31 @@ function drawSpendingCurve (x_1,x_2,t_1,t_2,alpha_) {
         .datum(age_ratio_array_1)
         .transition()
         .duration(1000)
-        .attr("d",  d3.line()
-            .curve(d3.curveBasis)
-            .x(function(d) { return x(d[0]); })
-            .y(function(d) { return y(d[1]); })
+        .attr("d",d3.area()
+          .x(function(d) { return x(d[0]); })
+          .y0(height)
+          .y1(function(d) { return y(d[1]); })
         );
+        // .attr("d",  d3.line()
+        //     .curve(d3.curveBasis)
+        //     .x(function(d) { return x(d[0]); })
+        //     .y(function(d) { return y(d[1]); })
+        // )
 
         curve_2
         .datum(age_ratio_array_2)
         .transition()
         .duration(1000)
-        .attr("d",  d3.line()
-            .curve(d3.curveBasis)
-            .x(function(d) { return x(d[0]); })
-            .y(function(d) { return y(d[1]); })
+        .attr("d",d3.area()
+          .x(function(d) { return x(d[0]); })
+          .y0(height)
+          .y1(function(d) { return y(d[1]); })
         );
+        // .attr("d",  d3.line()
+        //     .curve(d3.curveBasis)
+        //     .x(function(d) { return x(d[0]); })
+        //     .y(function(d) { return y(d[1]); })
+        // )
     }
 
     slideInput.addEventListener('input',function(event) {
