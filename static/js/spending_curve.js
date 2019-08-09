@@ -49,8 +49,8 @@ function drawSpendingCurve (x_1,x_2,t_1,t_2,alpha_) {
     // Calculate the initial input values
     // d3.select("#spending-min-ratio").property("value", "1");
     d3.select("#min-spending-ratio-output").text(alpha_*100);
-    var age_ratio_array_init_1 = age_array.map(d => [d,t_1 * calcSpendingCurve(d,alpha_)]);
-    var age_ratio_array_init_2 = age_array.map(d => [d,t_2 * calcSpendingCurve(d,alpha_)]);
+    var age_ratio_array_init_1 = age_array.map(d => [d,t_1]);
+    var age_ratio_array_init_2 = age_array.map(d => [d,(t_2 - t_1) * calcSpendingCurve(d,alpha_) + t_1]);
 
     var curve_1 = svg
     .append('g')
@@ -99,8 +99,8 @@ function drawSpendingCurve (x_1,x_2,t_1,t_2,alpha_) {
 
     function updateCurve(alpha_) {
         // recompute density estimation
-        var age_ratio_array_1 = age_array.map(d => [d,t_1 * calcSpendingCurve(d,alpha_)]);
-        var age_ratio_array_2 = age_array.map(d => [d,t_2 * calcSpendingCurve(d,alpha_)]);
+        var age_ratio_array_1 = age_array.map(d => [d,t_1]);
+        var age_ratio_array_2 = age_array.map(d => [d,(t_2 - t_1) * calcSpendingCurve(d,alpha_) + t_1]);
         // update the chart
         curve_1
         .datum(age_ratio_array_1)
