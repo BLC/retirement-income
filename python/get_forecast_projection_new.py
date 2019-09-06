@@ -42,8 +42,12 @@ def decumulate_for_one_year(profile, starting_wealth, model_port, projection_yea
         # income_tax_assumption = 0.25 #used to determine the after tax dynamic spending target at each node
         minimum_spending_boundary = profile['target']['essential']
         maximum_spending_boundary = profile['target']['discretional']
-        minimum_boundary = minimum_spending_boundary * spending_boundary_at_projection_year #lower boundary
-        maximum_boundary = maximum_spending_boundary * spending_boundary_at_projection_year #upper boundary
+
+        minimum_boundary = minimum_spending_boundary
+        maximum_boundary = minimum_spending_boundary + (maximum_spending_boundary - minimum_spending_boundary) * spending_boundary_at_projection_year
+
+        # minimum_boundary = minimum_spending_boundary * spending_boundary_at_projection_year #lower boundary
+        # maximum_boundary = maximum_spending_boundary * spending_boundary_at_projection_year #upper boundary
 
         ## Dynamic amount is the product of the starting account balance and the ratio following from the specified method
         # dynamic_amount = starting_wealth_at_sim_run * dynamic_spending_ratio_at_projection_year * (1 - income_tax_assumption) + annuity_Income + SS_Income if starting_wealth_at_sim_run > 0 else 0
@@ -160,8 +164,8 @@ def get_forecast_projection(profile, config, forecast_config, num_sim_runs=100):
                         "Income": income_output_list,
                         "Wealth": wealth_output_list,
                         "Age":age_vec,
-                        "target_upperBound":list(discretional_target*spending_boundary_curve_vec),
-                        "target_lowerBound":list(essential_target*spending_boundary_curve_vec),
+                        "target_upperBound":list((discretional_target-essential_target)*spending_boundary_curve_vec + essential_target),
+                        "target_lowerBound":list(essential_target*np.ones(spending_boundary_curve_vec.size)),
                         "profile":{"income_start_index":max(retirement_age-age,0)},
                         "spending_strategy":profile['spending_strategy']}
 
